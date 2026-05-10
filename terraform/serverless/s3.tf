@@ -236,6 +236,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "config_logs" {
   rule {
     id     = "expire-old-config-snapshots"
     status = "Enabled"
+    filter {}
     expiration { days = 90 }
     noncurrent_version_expiration { noncurrent_days = 30 }
   }

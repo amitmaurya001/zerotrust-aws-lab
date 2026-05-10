@@ -79,7 +79,7 @@ output "private_url" {
 
 output "cloudflare_idp_id" {
   description = "Cloudflare Access Identity Provider ID for Okta OIDC - Terraform."
-  value       = cloudflare_access_identity_provider.okta.id
+  value       = cloudflare_zero_trust_access_identity_provider.okta_tf.id
 }
 
 output "scheduler_role_arn" {

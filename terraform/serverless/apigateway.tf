@@ -132,13 +132,13 @@ resource "aws_apigatewayv2_stage" "default" {
 
   # Stage-level throttling — protects against demo abuse
   default_route_settings {
-    throttling_rate_limit  = var.api_throttle_rate
-    throttling_burst_limit = var.api_throttle_burst
-    detailed_metrics_enabled = true
+    throttling_rate_limit    = var.api_throttle_rate
+    throttling_burst_limit   = var.api_throttle_burst
   }
 
   access_log_settings {
     destination_arn = aws_cloudwatch_log_group.api_gateway.arn
+    format          = "$context.requestId $context.httpMethod $context.routeKey $context.status $context.responseLength $context.requestTime"
   }
 
   tags = {
