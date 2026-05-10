@@ -687,8 +687,8 @@
       fetch(API_URL + '/session-count')
         .then(function (r) { return r.json(); })
         .then(function (d) {
-          if (d.total   !== undefined) document.getElementById('total-count').textContent   = d.total;
-          if (d.deleted !== undefined) document.getElementById('deleted-count').textContent = d.deleted;
+          if (d.sessions_provisioned !== undefined) document.getElementById('total-count').textContent   = d.sessions_provisioned;
+          if (d.sessions_deleted     !== undefined) document.getElementById('deleted-count').textContent = d.sessions_deleted;
         })
         .catch(function () {
           document.getElementById('total-count').textContent   = '—';
