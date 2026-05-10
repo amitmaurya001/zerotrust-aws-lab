@@ -111,14 +111,6 @@ resource "aws_s3_bucket_policy" "webapp" {
         Condition = {
           IpAddress = { "aws:SourceIp" = local.cloudflare_ipv4_cidrs }
         }
-      },
-      {
-        Sid       = "DenyNonSSL"
-        Effect    = "Deny"
-        Principal = "*"
-        Action    = "s3:*"
-        Resource  = [aws_s3_bucket.webapp.arn, "${aws_s3_bucket.webapp.arn}/*"]
-        Condition = { Bool = { "aws:SecureTransport" = "false" } }
       }
     ]
   })
@@ -184,14 +176,6 @@ resource "aws_s3_bucket_policy" "private" {
         Condition = {
           IpAddress = { "aws:SourceIp" = local.cloudflare_ipv4_cidrs }
         }
-      },
-      {
-        Sid       = "DenyNonSSL"
-        Effect    = "Deny"
-        Principal = "*"
-        Action    = "s3:*"
-        Resource  = [aws_s3_bucket.private.arn, "${aws_s3_bucket.private.arn}/*"]
-        Condition = { Bool = { "aws:SecureTransport" = "false" } }
       }
     ]
   })
