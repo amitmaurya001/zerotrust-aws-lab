@@ -69,6 +69,7 @@ resource "cloudflare_zero_trust_access_application" "private_tf" {
   session_duration           = var.cloudflare_session_duration
   auto_redirect_to_identity  = true
   http_only_cookie_attribute = false
+  allowed_idps               = [cloudflare_zero_trust_access_identity_provider.okta_tf.id]
 }
 
 ################################################################################
