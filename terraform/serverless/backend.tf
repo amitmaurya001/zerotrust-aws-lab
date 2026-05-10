@@ -52,7 +52,7 @@ terraform {
       source  = "hashicorp/archive"
       version = "~> 2.0"
     }
-  }/Users/amit/Downloads/zerotrustproject/zt/files(1)/cloudflare.tf
+  }
 }
 
 provider "aws" {
