@@ -467,11 +467,18 @@
       }
 
       /* Step 4 — calculate time remaining from JWT exp */
-      var now      = Math.floor(Date.now() / 1000);
-      var exp      = claims.exp || (now + SESSION_DURATION);
-      var iat      = claims.iat || (now - (SESSION_DURATION - (exp - now)));
-      sessionSeconds  = Math.max(0, exp - now);
-      sessionStartTime = new Date(iat * 1000);
+     // var now      = Math.floor(Date.now() / 1000);
+     // var exp      = claims.exp || (now + SESSION_DURATION);
+     // var iat      = claims.iat || (now - (SESSION_DURATION - (exp - now)));
+     // sessionSeconds  = Math.max(0, exp - now);
+     // sessionStartTime = new Date(iat * 1000);
+
+     /* Step 4 — calculate time remaining from JIT session duration (not CF JWT exp) */
+	var now      = Math.floor(Date.now() / 1000);
+	var iat      = claims.iat || now;
+	sessionSeconds   = SESSION_DURATION; /* Always 3 min — EventBridge revokes at this time */
+	sessionStartTime = new Date(iat * 1000);
+	      
 
       /* Step 5 — populate page */
       renderPage(claims);
