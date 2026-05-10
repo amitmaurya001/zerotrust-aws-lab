@@ -48,6 +48,7 @@ resource "cloudflare_zero_trust_access_identity_provider" "okta_tf" {
     token_url     = "https://${var.okta_domain}/oauth2/default/v1/token"
     certs_url     = "https://${var.okta_domain}/oauth2/default/v1/keys"
     scopes        = ["openid", "email", "profile", "groups"]
+    support_groups = true
   }
 }
 
