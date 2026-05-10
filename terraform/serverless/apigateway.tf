@@ -122,6 +122,28 @@ resource "aws_apigatewayv2_route" "session_count" {
 }
 
 ################################################################################
+# CloudWatch log resource policy
+# Required before stage creation - allows API Gateway to write access logs
+################################################################################
+
+resource "aws_cloudwatch_log_resource_policy" "api_gateway" {
+  policy_name = "zerotrust-apigateway-logs"
+  policy_document = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect    = "Allow"
+      Principal = { Service = "apigateway.amazonaws.com" }
+      Action = [
+        "logs:CreateLogGroup", "logs:CreateLogStream",
+        "logs:DescribeLogGroups", "logs:DescribeLogStreams",
+        "logs:PutLogEvents", "logs:GetLogEvents", "logs:FilterLogEvents"
+      ]
+      Resource = "*"
+    }]
+  })
+}
+
+################################################################################
 # Stage - $default (auto-deploy)
 ################################################################################
 
@@ -130,10 +152,9 @@ resource "aws_apigatewayv2_stage" "default" {
   name        = "$default"
   auto_deploy = true
 
-  # Stage-level throttling - protects against demo abuse
   default_route_settings {
-    throttling_rate_limit    = var.api_throttle_rate
-    throttling_burst_limit   = var.api_throttle_burst
+    throttling_rate_limit  = var.api_throttle_rate
+    throttling_burst_limit = var.api_throttle_burst
   }
 
   access_log_settings {
@@ -145,6 +166,8 @@ resource "aws_apigatewayv2_stage" "default" {
     Name    = "zerotrust-api-default-stage"
     Purpose = "API Gateway default stage - auto-deploy"
   }
+
+  depends_on = [aws_cloudwatch_log_resource_policy.api_gateway]
 }
 
 ################################################################################
