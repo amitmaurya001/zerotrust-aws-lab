@@ -24,7 +24,7 @@
 ################################################################################
 
 terraform {
-  required_version = ">= 1.4.8"
+  required_version = ">= 1.4.7"
 
   backend "s3" {
     # bucket        — injected via -backend-config="bucket=..." in GitHub Actions
