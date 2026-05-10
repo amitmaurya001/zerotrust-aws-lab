@@ -69,7 +69,7 @@ jobs:
 
       - name: Build Lambda package
         run: |
-          cd lambda
+          cd ../../lambda
           pip install -r requirements.txt -t ./package
           cp jit_provisioner.py jit_revoker.py session_checker.py ./package/
 
