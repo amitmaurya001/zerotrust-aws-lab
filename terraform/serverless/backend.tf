@@ -1,7 +1,7 @@
 ################################################################################
 # backend.tf
 # Terraform backend + provider configuration
-# Phase 2 + 2.5 — Serverless stack
+# Phase 2 + 2.5 - Serverless stack
 #
 # PRE-REQUISITES (create manually before terraform init):
 #   S3 bucket:  name stored in GitHub Secret TF_STATE_BUCKET
@@ -15,10 +15,10 @@
 #   3. Update GitHub Secret AWS_ROLE_ARN_SERVERLESS with new role ARN
 #   4. Update all other GitHub Secrets if credentials changed
 #   5. terraform init -reconfigure  (workflow handles this automatically)
-#   No file changes needed — all config via GitHub Secrets
+#   No file changes needed - all config via GitHub Secrets
 #
-# PARTIAL BACKEND CONFIG:/Users/amit/Downloads/zerotrustproject/zt/files(1)/cloudflare.tf
-#   bucket is intentionally omitted here — injected at runtime by GitHub Actions:
+# PARTIAL BACKEND CONFIG:
+#   bucket is intentionally omitted here - injected at runtime by GitHub Actions:
 #   terraform init -backend-config="bucket=${{ secrets.TF_STATE_BUCKET }}"
 #   This allows account migration with zero file changes.
 ################################################################################
@@ -27,7 +27,7 @@ terraform {
   required_version = ">= 1.4.7"
 
   backend "s3" {
-    # bucket        — injected via -backend-config="bucket=..." in GitHub Actions
+    # bucket        - injected via -backend-config="bucket=..." in GitHub Actions
     #                 GitHub Secret: TF_STATE_BUCKET
     key          = "zerotrust/serverless/terraform.tfstate"
     region       = "us-east-1"
@@ -84,7 +84,7 @@ locals {
     ManagedBy   = "terraform"
     Phase       = "serverless"
     Owner       = "amit-maurya"
-    Repo        = "github.com/amitmaurya001/zerotrust-aws-lab"
+    Repo        = "amitmaurya001-zerotrust-aws-lab"
   }
 
   webapp_bucket_name  = "${var.webapp_subdomain}.${var.domain}"

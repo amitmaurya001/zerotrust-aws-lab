@@ -3,15 +3,15 @@
 # API Gateway HTTP API for Phase 2 + 2.5 serverless stack
 #
 # Routes:
-#   POST /demo-access    — jit-provisioner  — no auth (open, rate-limited)
-#   GET  /session-status — session-checker  — JWT authorizer (Okta)
-#   GET  /session-count  — session-checker  — no auth (public counter)
-#   OPTIONS /*           — CORS preflight   — handled by API GW natively
+#   POST /demo-access    - jit-provisioner  - no auth (open, rate-limited)
+#   GET  /session-status - session-checker  - JWT authorizer (Okta)
+#   GET  /session-count  - session-checker  - no auth (public counter)
+#   OPTIONS /*           - CORS preflight   - handled by API GW natively
 #
 # Auth:
 #   JWT authorizer uses Okta authorization server
 #   Only /session-status requires a valid JWT
-#   /demo-access is intentionally open — initiates the JIT flow
+#   /demo-access is intentionally open - initiates the JIT flow
 #
 # CORS:
 #   Allowed origin: https://webapp.amitwebsite.online only
@@ -19,10 +19,10 @@
 #
 # Throttling:
 #   Stage-level: var.api_throttle_rate rps / var.api_throttle_burst burst
-#   Protects against demo abuse — not a production SLA
+#   Protects against demo abuse - not a production SLA
 #
 # Domain:
-#   No custom domain — API GW execute-api URL is referenced by webapp CONFIG
+#   No custom domain - API GW execute-api URL is referenced by webapp CONFIG
 #   post-apply output prints the URL to paste into webapp/index.html
 ################################################################################
 
@@ -33,7 +33,7 @@
 resource "aws_apigatewayv2_api" "main" {
   name          = "zerotrust-api"
   protocol_type = "HTTP"
-  description   = "ZTNA JIT demo API — provisioner, revoker callback, session checker"
+  description   = "ZTNA JIT demo API - provisioner, revoker callback, session checker"
 
   cors_configuration {
     allow_origins     = [local.webapp_url]
@@ -46,12 +46,12 @@ resource "aws_apigatewayv2_api" "main" {
 
   tags = {
     Name    = "zerotrust-api"
-    Purpose = "JIT demo API — HTTP API Gateway"
+    Purpose = "JIT demo API - HTTP API Gateway"
   }
 }
 
 ################################################################################
-# JWT Authorizer — Okta
+# JWT Authorizer - Okta
 # Used only on /session-status
 # Validates access tokens issued by Okta authorization server
 ################################################################################
@@ -92,17 +92,17 @@ resource "aws_apigatewayv2_integration" "session_checker" {
 # Routes
 ################################################################################
 
-# POST /demo-access — open, no auth, rate-limited at stage level
+# POST /demo-access - open, no auth, rate-limited at stage level
 resource "aws_apigatewayv2_route" "demo_access" {
   api_id    = aws_apigatewayv2_api.main.id
   route_key = "POST /demo-access"
   target    = "integrations/${aws_apigatewayv2_integration.jit_provisioner.id}"
 
-  # No authorizer — intentionally open to initiate JIT flow
+  # No authorizer - intentionally open to initiate JIT flow
   authorization_type = "NONE"
 }
 
-# GET /session-status — JWT required (Okta access token)
+# GET /session-status - JWT required (Okta access token)
 resource "aws_apigatewayv2_route" "session_status" {
   api_id    = aws_apigatewayv2_api.main.id
   route_key = "GET /session-status"
@@ -112,7 +112,7 @@ resource "aws_apigatewayv2_route" "session_status" {
   authorizer_id      = aws_apigatewayv2_authorizer.okta_jwt.id
 }
 
-# GET /session-count — open, public counter displayed on webapp
+# GET /session-count - open, public counter displayed on webapp
 resource "aws_apigatewayv2_route" "session_count" {
   api_id    = aws_apigatewayv2_api.main.id
   route_key = "GET /session-count"
@@ -122,7 +122,7 @@ resource "aws_apigatewayv2_route" "session_count" {
 }
 
 ################################################################################
-# Stage — $default (auto-deploy)
+# Stage - $default (auto-deploy)
 ################################################################################
 
 resource "aws_apigatewayv2_stage" "default" {
@@ -130,7 +130,7 @@ resource "aws_apigatewayv2_stage" "default" {
   name        = "$default"
   auto_deploy = true
 
-  # Stage-level throttling — protects against demo abuse
+  # Stage-level throttling - protects against demo abuse
   default_route_settings {
     throttling_rate_limit    = var.api_throttle_rate
     throttling_burst_limit   = var.api_throttle_burst
@@ -143,12 +143,12 @@ resource "aws_apigatewayv2_stage" "default" {
 
   tags = {
     Name    = "zerotrust-api-default-stage"
-    Purpose = "API Gateway default stage — auto-deploy"
+    Purpose = "API Gateway default stage - auto-deploy"
   }
 }
 
 ################################################################################
-# CloudWatch log group — API Gateway access logs
+# CloudWatch log group - API Gateway access logs
 # Retention aligned with var.log_retention_days (defined in cloudwatch.tf too)
 ################################################################################
 

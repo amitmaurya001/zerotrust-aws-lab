@@ -3,22 +3,22 @@
 # IAM roles and policies for Phase 2 + 2.5 serverless stack
 #
 # Roles:
-#   zerotrust-lambda-execution-role   — assumed by all 3 Lambda functions
-#   zerotrust-scheduler-role          — assumed by EventBridge Scheduler
+#   zerotrust-lambda-execution-role   - assumed by all 3 Lambda functions
+#   zerotrust-scheduler-role          - assumed by EventBridge Scheduler
 #                                       to invoke jit-revoker per JIT session
-#   zerotrust-serverless-deploy-role  — assumed by GitHub Actions OIDC
+#   zerotrust-serverless-deploy-role  - assumed by GitHub Actions OIDC
 #
 # Principle of least privilege:
 #   Lambda: SSM read (/zerotrust/* only), EventBridge scheduler create/delete,
 #           CloudWatch metrics (ZeroTrust/JIT namespace only) + logs
 #   Scheduler: InvokeFunction on jit-revoker only
-#   Deploy role: serverless resources only — no EC2/RDS perms
+#   Deploy role: serverless resources only - no EC2/RDS perms
 #
 # GitHub OIDC:
 #   No long-lived credentials
 #   Locked to repo:amitmaurya001/zerotrust-aws-lab + environment:production
 #
-# PRE-REQUISITE — create OIDC provider once per account before first apply:
+# PRE-REQUISITE - create OIDC provider once per account before first apply:
 #   aws iam create-open-id-connect-provider \
 #     --url https://token.actions.githubusercontent.com \
 #     --client-id-list sts.amazonaws.com \
@@ -47,7 +47,7 @@ resource "aws_iam_role" "lambda_execution" {
 
   tags = {
     Name    = "zerotrust-lambda-execution-role"
-    Purpose = "Lambda execution — all three ZTNA functions"
+    Purpose = "Lambda execution - all three ZTNA functions"
   }
 }
 
@@ -58,7 +58,7 @@ resource "aws_iam_role_policy_attachment" "lambda_basic_execution" {
 
 data "aws_iam_policy_document" "lambda_permissions" {
 
-  # SSM — read /zerotrust/* parameters only
+  # SSM - read /zerotrust/* parameters only
   statement {
     sid     = "SSMReadZeroTrustParams"
     effect  = "Allow"
@@ -68,7 +68,7 @@ data "aws_iam_policy_document" "lambda_permissions" {
     ]
   }
 
-  # KMS — decrypt SSM SecureString (AWS managed key)
+  # KMS - decrypt SSM SecureString (AWS managed key)
   statement {
     sid     = "KMSDecryptSSM"
     effect  = "Allow"
@@ -78,7 +78,7 @@ data "aws_iam_policy_document" "lambda_permissions" {
     ]
   }
 
-  # EventBridge Scheduler — create/delete per-session revocation schedules
+  # EventBridge Scheduler - create/delete per-session revocation schedules
   # Scoped to zerotrust-jit schedule group only
   statement {
     sid    = "EventBridgeSchedulerJIT"
@@ -93,7 +93,7 @@ data "aws_iam_policy_document" "lambda_permissions" {
     ]
   }
 
-  # IAM PassRole — jit-provisioner passes scheduler role when creating schedules
+  # IAM PassRole - jit-provisioner passes scheduler role when creating schedules
   statement {
     sid     = "PassSchedulerRole"
     effect  = "Allow"
@@ -106,7 +106,7 @@ data "aws_iam_policy_document" "lambda_permissions" {
     }
   }
 
-  # CloudWatch — emit JIT session counters (namespace scoped)
+  # CloudWatch - emit JIT session counters (namespace scoped)
   statement {
     sid     = "CloudWatchMetricsPut"
     effect  = "Allow"
@@ -119,7 +119,7 @@ data "aws_iam_policy_document" "lambda_permissions" {
     }
   }
 
-  # CloudWatch — read session counters for GET /session-count
+  # CloudWatch - read session counters for GET /session-count
   statement {
     sid    = "CloudWatchMetricsRead"
     effect = "Allow"
@@ -161,7 +161,7 @@ data "aws_iam_policy_document" "scheduler_assume_role" {
 resource "aws_iam_role" "scheduler" {
   name               = "zerotrust-scheduler-role"
   assume_role_policy = data.aws_iam_policy_document.scheduler_assume_role.json
-  description        = "EventBridge Scheduler — invoke jit-revoker only"
+  description        = "EventBridge Scheduler - invoke jit-revoker only"
 
   tags = {
     Name    = "zerotrust-scheduler-role"
@@ -188,7 +188,7 @@ resource "aws_iam_role_policy" "scheduler_invoke" {
 }
 
 ################################################################################
-# GitHub Actions OIDC — Serverless Deploy Role
+# GitHub Actions OIDC - Serverless Deploy Role
 # Locked to repo amitmaurya001/zerotrust-aws-lab + environment:production
 ################################################################################
 
@@ -216,18 +216,18 @@ data "aws_iam_policy_document" "github_actions_assume_role" {
 resource "aws_iam_role" "github_actions_serverless" {
   name                 = "zerotrust-serverless-deploy-role"
   assume_role_policy   = data.aws_iam_policy_document.github_actions_assume_role.json
-  description          = "GitHub Actions OIDC deploy role — serverless stack only"
+  description          = "GitHub Actions OIDC deploy role - serverless stack only"
   max_session_duration = 3600
 
   tags = {
     Name    = "zerotrust-serverless-deploy-role"
-    Purpose = "GitHub Actions OIDC — serverless Terraform + S3 sync"
+    Purpose = "GitHub Actions OIDC - serverless Terraform + S3 sync"
   }
 }
 
 data "aws_iam_policy_document" "github_actions_serverless_permissions" {
 
-  # S3 — state bucket + ZTNA website buckets + config logs
+  # S3 - state bucket + ZTNA website buckets + config logs
   statement {
     sid    = "S3TerraformState"
     effect = "Allow"
@@ -268,7 +268,7 @@ data "aws_iam_policy_document" "github_actions_serverless_permissions" {
     ]
   }
 
-  # Lambda — 3 ZTNA functions only
+  # Lambda - 3 ZTNA functions only
   statement {
     sid    = "LambdaManagement"
     effect = "Allow"
@@ -317,21 +317,21 @@ data "aws_iam_policy_document" "github_actions_serverless_permissions" {
     resources = ["*"]
   }
 
-  # EventBridge Scheduler — schedule group management
+  # EventBridge Scheduler - schedule group management
   statement {
     sid    = "EventBridgeScheduler"
     effect = "Allow"
     actions = [
       "scheduler:CreateScheduleGroup", "scheduler:DeleteScheduleGroup",
       "scheduler:GetScheduleGroup", "scheduler:ListScheduleGroups",
-      "scheduler:TagResource",
+      "scheduler:TagResource", "scheduler:UntagResource", "scheduler:ListTagsForResource",
     ]
     resources = [
       "arn:aws:scheduler:${var.aws_region}:*:schedule-group/zerotrust-jit",
     ]
   }
 
-  # IAM — zerotrust-* roles only
+  # IAM - zerotrust-* roles only
   statement {
     sid    = "IAMZeroTrustRoles"
     effect = "Allow"
@@ -343,10 +343,13 @@ data "aws_iam_policy_document" "github_actions_serverless_permissions" {
       "iam:GetRolePolicy", "iam:ListRolePolicies", "iam:ListAttachedRolePolicies",
       "iam:TagRole", "iam:UntagRole",
     ]
-    resources = ["arn:aws:iam::*:role/zerotrust-*"]
+    resources = [
+      "arn:aws:iam::*:role/zerotrust-*",
+      "arn:aws:iam::*:role/aws-service-role/config.amazonaws.com/*",
+    ]
   }
 
-  # IAM — read OIDC provider (created manually as pre-req)
+  # IAM - read OIDC provider (created manually as pre-req)
   statement {
     sid     = "IAMOIDCRead"
     effect  = "Allow"
@@ -356,7 +359,38 @@ data "aws_iam_policy_document" "github_actions_serverless_permissions" {
     ]
   }
 
-  # CloudWatch — log groups, alarms, dashboard
+  # IAM - service linked role for AWS Config
+  statement {
+    sid     = "IAMServiceLinkedRole"
+    effect  = "Allow"
+    actions = ["iam:CreateServiceLinkedRole"]
+    resources = [
+      "arn:aws:iam::*:role/aws-service-role/config.amazonaws.com/*"
+    ]
+    condition {
+      test     = "StringLike"
+      variable = "iam:AWSServiceName"
+      values   = ["config.amazonaws.com"]
+    }
+  }
+
+  # IAM - attach managed policies to roles
+  statement {
+    sid     = "IAMManagedPolicyAttach"
+    effect  = "Allow"
+    actions = ["iam:AttachRolePolicy", "iam:DetachRolePolicy"]
+    resources = ["arn:aws:iam::*:role/zerotrust-*"]
+    condition {
+      test     = "ArnLike"
+      variable = "iam:PolicyARN"
+      values   = [
+        "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+        "arn:aws:iam::aws:policy/service-role/AWS_ConfigRole",
+      ]
+    }
+  }
+
+  # CloudWatch - log groups, alarms, dashboard
   statement {
     sid    = "CloudWatchManagement"
     effect = "Allow"
@@ -364,14 +398,15 @@ data "aws_iam_policy_document" "github_actions_serverless_permissions" {
       "logs:CreateLogGroup", "logs:DeleteLogGroup",
       "logs:DescribeLogGroups", "logs:PutRetentionPolicy",
       "logs:TagLogGroup", "logs:ListTagsLogGroup",
+      "logs:ListTagsForResource",
       "cloudwatch:PutMetricAlarm", "cloudwatch:DeleteAlarms", "cloudwatch:DescribeAlarms",
       "cloudwatch:PutDashboard", "cloudwatch:DeleteDashboards", "cloudwatch:GetDashboard",
-      "cloudwatch:TagResource",
+      "cloudwatch:TagResource", "cloudwatch:ListTagsForResource",
     ]
     resources = ["*"]
   }
 
-  # SNS — alerts topic
+  # SNS - alerts topic
   statement {
     sid    = "SNSManagement"
     effect = "Allow"
@@ -379,7 +414,8 @@ data "aws_iam_policy_document" "github_actions_serverless_permissions" {
       "sns:CreateTopic", "sns:DeleteTopic",
       "sns:GetTopicAttributes", "sns:SetTopicAttributes",
       "sns:Subscribe", "sns:Unsubscribe", "sns:ListSubscriptionsByTopic",
-      "sns:TagResource",
+      "sns:GetSubscriptionAttributes",
+      "sns:TagResource", "sns:ListTagsForResource",
     ]
     resources = ["arn:aws:sns:${var.aws_region}:*:zerotrust-alerts"]
   }
@@ -399,7 +435,7 @@ data "aws_iam_policy_document" "github_actions_serverless_permissions" {
     resources = ["*"]
   }
 
-  # SSM — read params for plan/apply validation
+  # SSM - read params for plan/apply validation
   statement {
     sid     = "SSMReadZeroTrustParams"
     effect  = "Allow"
@@ -409,7 +445,7 @@ data "aws_iam_policy_document" "github_actions_serverless_permissions" {
     ]
   }
 
-  # STS — get caller identity
+  # STS - get caller identity
   statement {
     sid       = "STSGetCallerIdentity"
     effect    = "Allow"

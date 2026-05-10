@@ -3,11 +3,11 @@
 # S3 buckets for Phase 2 + 2.5 serverless stack
 #
 # Buckets:
-#   webapp.amitwebsite.online   — public JIT demo landing page  (EXISTING)
-#   private.amitwebsite.online  — Cloudflare Access protected   (EXISTING)
-#   aws-config-zerotrust-[acct] — AWS Config delivery           (NEW)
+#   webapp.amitwebsite.online   - public JIT demo landing page  (EXISTING)
+#   private.amitwebsite.online  - Cloudflare Access protected   (EXISTING)
+#   aws-config-zerotrust-[acct] - AWS Config delivery           (NEW)
 #
-# EXISTING BUCKETS — import before first apply:
+# EXISTING BUCKETS - import before first apply:
 #   terraform import aws_s3_bucket.webapp webapp.amitwebsite.online
 #   terraform import aws_s3_bucket.private private.amitwebsite.online
 #   terraform import aws_s3_bucket_website_configuration.webapp webapp.amitwebsite.online
@@ -16,18 +16,18 @@
 #   terraform import aws_s3_bucket_public_access_block.private private.amitwebsite.online
 #
 # On first apply Terraform will ADD:
-#   — Cloudflare IP allowlist bucket policy (both ZTNA buckets)
-#   — Versioning + SSE (reconcile to desired state)
+#   - Cloudflare IP allowlist bucket policy (both ZTNA buckets)
+#   - Versioning + SSE (reconcile to desired state)
 #
 # Security model:
 #   ZTNA buckets: Cloudflare IPs only + SSL enforced (orange cloud, never direct)
 #   Config bucket: Config service only + SSL enforced, fully private
 #
-# NEVER put CloudFront in front of ZTNA buckets — breaks Cloudflare Access
+# NEVER put CloudFront in front of ZTNA buckets - breaks Cloudflare Access
 ################################################################################
 
 ################################################################################
-# Cloudflare IP ranges — https://www.cloudflare.com/ips-v4
+# Cloudflare IP ranges - https://www.cloudflare.com/ips-v4
 ################################################################################
 
 locals {
@@ -51,7 +51,7 @@ locals {
 }
 
 ################################################################################
-# webapp.amitwebsite.online — EXISTING BUCKET
+# webapp.amitwebsite.online - EXISTING BUCKET
 ################################################################################
 
 resource "aws_s3_bucket" "webapp" {
@@ -63,14 +63,14 @@ resource "aws_s3_bucket" "webapp" {
 
   tags = {
     Name    = local.webapp_bucket_name
-    Purpose = "ZTNA webapp — JIT demo landing page"
+    Purpose = "ZTNA webapp - JIT demo landing page"
   }
 }
 
 resource "aws_s3_bucket_public_access_block" "webapp" {
   bucket = aws_s3_bucket.webapp.id
 
-  # false required — S3 website hosting + bucket policy must coexist
+  # false required - S3 website hosting + bucket policy must coexist
   block_public_acls       = false
   block_public_policy     = false
   ignore_public_acls      = false
@@ -125,7 +125,7 @@ resource "aws_s3_bucket_policy" "webapp" {
 }
 
 ################################################################################
-# private.amitwebsite.online — EXISTING BUCKET
+# private.amitwebsite.online - EXISTING BUCKET
 ################################################################################
 
 resource "aws_s3_bucket" "private" {
@@ -137,7 +137,7 @@ resource "aws_s3_bucket" "private" {
 
   tags = {
     Name    = local.private_bucket_name
-    Purpose = "ZTNA private page — behind Cloudflare Access JITDemo policy"
+    Purpose = "ZTNA private page - behind Cloudflare Access JITDemo policy"
   }
 }
 
@@ -198,7 +198,7 @@ resource "aws_s3_bucket_policy" "private" {
 }
 
 ################################################################################
-# aws-config-zerotrust-[account-id] — NEW BUCKET
+# aws-config-zerotrust-[account-id] - NEW BUCKET
 # Referenced by config.tf delivery channel
 ################################################################################
 
@@ -207,7 +207,7 @@ resource "aws_s3_bucket" "config_logs" {
 
   tags = {
     Name    = "aws-config-zerotrust-${local.account_id}"
-    Purpose = "AWS Config delivery channel — compliance snapshots"
+    Purpose = "AWS Config delivery channel - compliance snapshots"
   }
 }
 
