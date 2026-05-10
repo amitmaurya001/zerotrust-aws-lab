@@ -28,19 +28,19 @@
 
 data "archive_file" "jit_provisioner" {
   type        = "zip"
-  source_file = "${path.root}/../../lambda/jit_provisioner.py"
+  source_dir  = "${path.root}/../../lambda/package"
   output_path = "/tmp/jit_provisioner.zip"
 }
 
 data "archive_file" "jit_revoker" {
   type        = "zip"
-  source_file = "${path.root}/../../lambda/jit_revoker.py"
+  source_dir  = "${path.root}/../../lambda/package"
   output_path = "/tmp/jit_revoker.zip"
 }
 
 data "archive_file" "session_checker" {
   type        = "zip"
-  source_file = "${path.root}/../../lambda/session_checker.py"
+  source_dir  = "${path.root}/../../lambda/package"
   output_path = "/tmp/session_checker.zip"
 }
 
