@@ -1,9 +1,6 @@
 ################################################################################
 # iam.tf
 # IAM roles and policies for Phase 2 + 2.5 serverless stack
-# # zerotrust-serverless-deploy-role is managed manually
-# Terraform cannot manage the role it assumes — chicken-and-egg
-# Import skipped intentionally
 #
 # Roles:
 #   zerotrust-lambda-execution-role   - assumed by all 3 Lambda functions

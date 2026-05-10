@@ -3,27 +3,27 @@
 # Lambda functions for Phase 2 + 2.5 serverless stack
 #
 # Functions:
-#   jit-provisioner   — POST /demo-access — creates Okta user + schedules revoke
-#   jit-revoker       — EventBridge trigger — deletes Okta user + cleans up rule
-#   session-checker   — GET /session-status + /session-count
+#   jit-provisioner   - POST /demo-access - creates Okta user + schedules revoke
+#   jit-revoker       - EventBridge trigger - deletes Okta user + cleans up rule
+#   session-checker   - GET /session-status + /session-count
 #
 # Packaging:
 #   archive_file data sources zip lambda/ directory contents at plan time
-#   Zips are written to /tmp/ and uploaded directly — no S3 staging needed
+#   Zips are written to /tmp/ and uploaded directly - no S3 staging needed
 #   source_code_hash triggers redeployment when code changes
 #
 # Runtime: Python 3.12
 # All functions share zerotrust-lambda-execution-role (defined in iam.tf)
 #
 # Environment variables passed to each function:
-#   SSM paths — Lambda reads actual values from SSM at runtime (not here)
-#   SCHEDULER_ROLE_ARN — jit-provisioner needs this to create EventBridge schedules
-#   SCHEDULER_GROUP    — schedule group name
-#   SESSION_DURATION   — seconds before jit-revoker fires
+#   SSM paths - Lambda reads actual values from SSM at runtime (not here)
+#   SCHEDULER_ROLE_ARN - jit-provisioner needs this to create EventBridge schedules
+#   SCHEDULER_GROUP    - schedule group name
+#   SESSION_DURATION   - seconds before jit-revoker fires
 ################################################################################
 
 ################################################################################
-# Archive — zip Lambda source files at plan time
+# Archive - zip Lambda source files at plan time
 ################################################################################
 
 data "archive_file" "jit_provisioner" {
@@ -52,7 +52,7 @@ data "archive_file" "session_checker" {
 
 resource "aws_lambda_function" "jit_provisioner" {
   function_name = local.fn_provisioner
-  description   = "JIT Okta user provisioner — creates user, assigns JITDemo group, schedules revoke"
+  description   = "JIT Okta user provisioner - creates user, assigns JITDemo group, schedules revoke"
   role          = aws_iam_role.lambda_execution.arn
 
   filename         = data.archive_file.jit_provisioner.output_path
@@ -81,7 +81,7 @@ resource "aws_lambda_function" "jit_provisioner" {
 
   tags = {
     Name    = local.fn_provisioner
-    Purpose = "JIT provisioner — POST /demo-access"
+    Purpose = "JIT provisioner - POST /demo-access"
   }
 }
 
@@ -93,7 +93,7 @@ resource "aws_lambda_function" "jit_provisioner" {
 
 resource "aws_lambda_function" "jit_revoker" {
   function_name = local.fn_revoker
-  description   = "JIT Okta user revoker — deactivates and deletes user, cleans up schedule"
+  description   = "JIT Okta user revoker - deactivates and deletes user, cleans up schedule"
   role          = aws_iam_role.lambda_execution.arn
 
   filename         = data.archive_file.jit_revoker.output_path
@@ -118,19 +118,19 @@ resource "aws_lambda_function" "jit_revoker" {
 
   tags = {
     Name    = local.fn_revoker
-    Purpose = "JIT revoker — EventBridge Scheduler trigger"
+    Purpose = "JIT revoker - EventBridge Scheduler trigger"
   }
 }
 
 ################################################################################
 # session-checker
-# GET /session-status — JWT authorizer (Okta), returns session state
-# GET /session-count  — no auth, returns CloudWatch metric totals
+# GET /session-status - JWT authorizer (Okta), returns session state
+# GET /session-count  - no auth, returns CloudWatch metric totals
 ################################################################################
 
 resource "aws_lambda_function" "session_checker" {
   function_name = local.fn_checker
-  description   = "Session checker — validates session state, returns CloudWatch counters"
+  description   = "Session checker - validates session state, returns CloudWatch counters"
   role          = aws_iam_role.lambda_execution.arn
 
   filename         = data.archive_file.session_checker.output_path
@@ -154,12 +154,12 @@ resource "aws_lambda_function" "session_checker" {
 
   tags = {
     Name    = local.fn_checker
-    Purpose = "Session checker — GET /session-status + /session-count"
+    Purpose = "Session checker - GET /session-status + /session-count"
   }
 }
 
 ################################################################################
-# Lambda permission — allow API Gateway to invoke each function
+# Lambda permission - allow API Gateway to invoke each function
 ################################################################################
 
 resource "aws_lambda_permission" "apigw_provisioner" {
