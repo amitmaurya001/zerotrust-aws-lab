@@ -1,0 +1,203 @@
+################################################################################
+# deploy-serverless.yml
+# GitHub Actions — Phase 2 + 2.5 Serverless Stack
+#
+# Trigger:  push to main when any of these paths change:
+#             terraform/serverless/**
+#             lambda/**
+#             webapp/**
+#             private-page/**
+#
+# Steps:
+#   1. Checkout
+#   2. Configure AWS credentials via OIDC (no long-lived keys)
+#   3. Setup Terraform
+#   4. terraform init  (bucket injected via -backend-config)
+#   5. terraform validate
+#   6. terraform plan  (output saved as artifact)
+#   7. Manual approval gate (environment: production)
+#   8. terraform apply
+#   9. Sync webapp/index.html → S3 webapp bucket
+#  10. Sync private-page/private.html → S3 private bucket
+#
+# Secrets required (GitHub Environment: production):
+#   AWS_ROLE_ARN_SERVERLESS   — OIDC role ARN
+#   TF_STATE_BUCKET           — S3 state bucket name
+#   CLOUDFLARE_API_TOKEN      — Cloudflare API token
+#   CLOUDFLARE_ZONE_ID        — Cloudflare zone ID
+#   CLOUDFLARE_ACCOUNT_ID     — Cloudflare account ID
+#   OKTA_DOMAIN               — Okta tenant domain
+#   OKTA_CLIENT_ID            — Okta OIDC app client ID
+#   OKTA_CLIENT_SECRET        — Okta OIDC app client secret
+#   ALERT_EMAIL               — CloudWatch SNS alert email
+#
+# NOTE: TF_LOCK_TABLE secret exists in GitHub but is NOT used here —
+#       backend.tf uses S3 native locking (use_lockfile=true), no DynamoDB.
+################################################################################
+
+name: Deploy Serverless Stack
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'terraform/serverless/**'
+      - 'lambda/**'
+      - 'webapp/**'
+      - 'private-page/**'
+  workflow_dispatch:  # Allow manual trigger
+
+permissions:
+  id-token: write   # Required for OIDC
+  contents: read
+
+jobs:
+  terraform:
+    name: Terraform Plan & Apply
+    runs-on: ubuntu-latest
+    environment: production   # Manual approval gate + secrets scope
+
+    defaults:
+      run:
+        working-directory: terraform/serverless
+
+    steps:
+      # ── Checkout ────────────────────────────────────────────────────────────
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ── AWS OIDC ─────────────────────────────────────────────────────────────
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume:    ${{ secrets.AWS_ROLE_ARN_SERVERLESS }}
+          aws-region:        us-east-1
+          role-session-name: GitHubActions-Serverless
+
+      # ── Terraform setup ───────────────────────────────────────────────────────
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "~1.4"
+
+      # ── terraform init ────────────────────────────────────────────────────────
+      # bucket injected via -backend-config — no hardcoded bucket name in repo
+      - name: Terraform Init
+        run: |
+          terraform init \
+            -backend-config="bucket=${{ secrets.TF_STATE_BUCKET }}" \
+            -backend-config="region=us-east-1" \
+            -input=false
+        env:
+          TF_VAR_cloudflare_api_token:   ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TF_VAR_cloudflare_zone_id:     ${{ secrets.CLOUDFLARE_ZONE_ID }}
+          TF_VAR_cloudflare_account_id:  ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          TF_VAR_okta_domain:            ${{ secrets.OKTA_DOMAIN }}
+          TF_VAR_okta_client_id:         ${{ secrets.OKTA_CLIENT_ID }}
+          TF_VAR_okta_client_secret:     ${{ secrets.OKTA_CLIENT_SECRET }}
+          TF_VAR_alert_email:            ${{ secrets.ALERT_EMAIL }}
+
+      # ── terraform validate ────────────────────────────────────────────────────
+      - name: Terraform Validate
+        run: terraform validate
+
+      # ── terraform plan ────────────────────────────────────────────────────────
+      - name: Terraform Plan
+        id: plan
+        run: |
+          terraform plan \
+            -input=false \
+            -out=tfplan \
+            -detailed-exitcode
+        env:
+          TF_VAR_cloudflare_api_token:   ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TF_VAR_cloudflare_zone_id:     ${{ secrets.CLOUDFLARE_ZONE_ID }}
+          TF_VAR_cloudflare_account_id:  ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          TF_VAR_okta_domain:            ${{ secrets.OKTA_DOMAIN }}
+          TF_VAR_okta_client_id:         ${{ secrets.OKTA_CLIENT_ID }}
+          TF_VAR_okta_client_secret:     ${{ secrets.OKTA_CLIENT_SECRET }}
+          TF_VAR_alert_email:            ${{ secrets.ALERT_EMAIL }}
+        # exit code 0 = no changes, 1 = error, 2 = changes present — all ok here
+        continue-on-error: false
+
+      # ── Save plan as artifact ─────────────────────────────────────────────────
+      - name: Upload plan artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: tfplan-serverless-${{ github.sha }}
+          path: terraform/serverless/tfplan
+          retention-days: 5
+
+      # ── terraform apply ───────────────────────────────────────────────────────
+      # Runs only after manual approval via environment: production gate
+      - name: Terraform Apply
+        run: terraform apply -input=false tfplan
+        env:
+          TF_VAR_cloudflare_api_token:   ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TF_VAR_cloudflare_zone_id:     ${{ secrets.CLOUDFLARE_ZONE_ID }}
+          TF_VAR_cloudflare_account_id:  ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          TF_VAR_okta_domain:            ${{ secrets.OKTA_DOMAIN }}
+          TF_VAR_okta_client_id:         ${{ secrets.OKTA_CLIENT_ID }}
+          TF_VAR_okta_client_secret:     ${{ secrets.OKTA_CLIENT_SECRET }}
+          TF_VAR_alert_email:            ${{ secrets.ALERT_EMAIL }}
+
+      # ── Capture Terraform outputs ─────────────────────────────────────────────
+      - name: Capture Terraform outputs
+        id: tf_outputs
+        run: |
+          echo "api_url=$(terraform output -raw api_gateway_url)" >> $GITHUB_OUTPUT
+          echo "cognito_client_id=$(terraform output -raw cognito_client_id)" >> $GITHUB_OUTPUT
+          echo "cognito_domain=$(terraform output -raw cognito_domain_url)" >> $GITHUB_OUTPUT
+        env:
+          TF_VAR_cloudflare_api_token:   ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TF_VAR_cloudflare_zone_id:     ${{ secrets.CLOUDFLARE_ZONE_ID }}
+          TF_VAR_cloudflare_account_id:  ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          TF_VAR_okta_domain:            ${{ secrets.OKTA_DOMAIN }}
+          TF_VAR_okta_client_id:         ${{ secrets.OKTA_CLIENT_ID }}
+          TF_VAR_okta_client_secret:     ${{ secrets.OKTA_CLIENT_SECRET }}
+          TF_VAR_alert_email:            ${{ secrets.ALERT_EMAIL }}
+
+  sync-s3:
+    name: Sync HTML to S3
+    runs-on: ubuntu-latest
+    environment: production
+    needs: terraform   # Only sync after successful apply
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume:    ${{ secrets.AWS_ROLE_ARN_SERVERLESS }}
+          aws-region:        us-east-1
+          role-session-name: GitHubActions-S3Sync
+
+      # Sync webapp index.html — cache-control for Cloudflare CDN
+      - name: Sync webapp/index.html to S3
+        run: |
+          aws s3 cp webapp/index.html \
+            s3://webapp.amitwebsite.online/index.html \
+            --content-type "text/html" \
+            --cache-control "public, max-age=300"
+
+      # Sync private page — no-cache (behind Access, always fresh)
+      - name: Sync private-page/private.html to S3
+        run: |
+          aws s3 cp private-page/private.html \
+            s3://private.amitwebsite.online/index.html \
+            --content-type "text/html" \
+            --cache-control "no-cache, no-store, must-revalidate"
+
+      - name: Deployment summary
+        run: |
+          echo "### Deployment Complete ✅" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Resource | URL |" >> $GITHUB_STEP_SUMMARY
+          echo "|---|---|" >> $GITHUB_STEP_SUMMARY
+          echo "| Webapp | https://webapp.amitwebsite.online |" >> $GITHUB_STEP_SUMMARY
+          echo "| Private page | https://private.amitwebsite.online |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Reminder:** Update CONFIG section in webapp/index.html with Terraform outputs if first deploy." >> $GITHUB_STEP_SUMMARY

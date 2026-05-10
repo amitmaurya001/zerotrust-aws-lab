@@ -1,0 +1,5 @@
+# Lambda dependencies — Phase 2/2.5
+# boto3 is pre-installed in the Lambda Python runtime — DO NOT add here
+# Only packages not in the Lambda runtime go here
+
+requests==2.31.0

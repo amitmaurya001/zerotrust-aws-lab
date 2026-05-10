@@ -1,0 +1,159 @@
+################################################################################
+# deploy-servers.yml
+# GitHub Actions — Phase 3 Servers Stack
+#
+# Trigger:  MANUAL ONLY (workflow_dispatch) — NEVER auto-deploy EC2
+#           Requires explicit input confirming intent
+#
+# Inputs:
+#   action        — 'apply' or 'destroy' (must be explicit)
+#   confirm       — must type 'yes-i-understand' to proceed
+#
+# Steps:
+#   1. Checkout
+#   2. Configure AWS credentials via OIDC
+#   3. Setup Terraform
+#   4. terraform init
+#   5. terraform validate
+#   6. terraform plan
+#   7. Manual approval gate (environment: production)
+#   8. terraform apply OR terraform destroy
+#
+# CRITICAL REMINDERS:
+#   — ALWAYS run destroy after screenshots — never leave EC2/RDS running
+#   — Per session cost ~$0.18 for 2hr — cost accumulates fast if forgotten
+#   — Uses separate state file from serverless stack
+#   — Uses separate deploy role (AWS_ROLE_ARN_SERVERS) with no Lambda/Cognito perms
+#
+# Secrets required (GitHub Environment: production):
+#   AWS_ROLE_ARN_SERVERS   — separate OIDC role, no Lambda/Cognito perms
+#   TF_STATE_BUCKET        — same state bucket, different key
+#   CLOUDFLARE_API_TOKEN
+#   CLOUDFLARE_ZONE_ID
+#   CLOUDFLARE_ACCOUNT_ID
+################################################################################
+
+name: Deploy Servers Stack (Phase 3)
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Terraform action to run'
+        required: true
+        type: choice
+        options:
+          - plan-only
+          - apply
+          - destroy
+      confirm:
+        description: 'Type "yes-i-understand" to confirm — DESTROY after screenshots'
+        required: true
+        type: string
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  validate-inputs:
+    name: Validate Inputs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check confirmation string
+        run: |
+          if [ "${{ github.event.inputs.confirm }}" != "yes-i-understand" ]; then
+            echo "ERROR: Confirmation string must be exactly 'yes-i-understand'"
+            exit 1
+          fi
+          echo "Confirmation accepted. Action: ${{ github.event.inputs.action }}"
+
+  terraform:
+    name: Terraform ${{ github.event.inputs.action }}
+    runs-on: ubuntu-latest
+    environment: production
+    needs: validate-inputs
+
+    defaults:
+      run:
+        working-directory: terraform/servers
+
+    steps:
+      # ── Checkout ────────────────────────────────────────────────────────────
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ── AWS OIDC ─────────────────────────────────────────────────────────────
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume:    ${{ secrets.AWS_ROLE_ARN_SERVERS }}
+          aws-region:        us-east-1
+          role-session-name: GitHubActions-Servers
+
+      # ── Terraform setup ───────────────────────────────────────────────────────
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "~1.4"
+
+      # ── terraform init ────────────────────────────────────────────────────────
+      - name: Terraform Init
+        run: |
+          terraform init \
+            -backend-config="bucket=${{ secrets.TF_STATE_BUCKET }}" \
+            -backend-config="region=us-east-1" \
+            -input=false
+        env:
+          TF_VAR_cloudflare_api_token:  ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TF_VAR_cloudflare_zone_id:    ${{ secrets.CLOUDFLARE_ZONE_ID }}
+          TF_VAR_cloudflare_account_id: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      # ── terraform validate ────────────────────────────────────────────────────
+      - name: Terraform Validate
+        run: terraform validate
+
+      # ── terraform plan ────────────────────────────────────────────────────────
+      - name: Terraform Plan
+        run: |
+          terraform plan \
+            -input=false \
+            -out=tfplan
+        env:
+          TF_VAR_cloudflare_api_token:  ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TF_VAR_cloudflare_zone_id:    ${{ secrets.CLOUDFLARE_ZONE_ID }}
+          TF_VAR_cloudflare_account_id: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      # ── terraform apply ───────────────────────────────────────────────────────
+      - name: Terraform Apply
+        if: github.event.inputs.action == 'apply'
+        run: terraform apply -input=false tfplan
+        env:
+          TF_VAR_cloudflare_api_token:  ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TF_VAR_cloudflare_zone_id:    ${{ secrets.CLOUDFLARE_ZONE_ID }}
+          TF_VAR_cloudflare_account_id: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      # ── terraform destroy ─────────────────────────────────────────────────────
+      - name: Terraform Destroy
+        if: github.event.inputs.action == 'destroy'
+        run: terraform destroy -auto-approve -input=false
+        env:
+          TF_VAR_cloudflare_api_token:  ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TF_VAR_cloudflare_zone_id:    ${{ secrets.CLOUDFLARE_ZONE_ID }}
+          TF_VAR_cloudflare_account_id: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      # ── Cost reminder ─────────────────────────────────────────────────────────
+      - name: Post-apply cost reminder
+        if: github.event.inputs.action == 'apply'
+        run: |
+          echo "### ⚠️ COST REMINDER" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Phase 3 servers are **running and accruing cost (~\$0.09/hr)**." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**After taking screenshots, run this workflow again with action=destroy**" >> $GITHUB_STEP_SUMMARY
+
+      - name: Post-destroy confirmation
+        if: github.event.inputs.action == 'destroy'
+        run: |
+          echo "### ✅ Servers Destroyed" >> $GITHUB_STEP_SUMMARY
+          echo "All Phase 3 EC2/RDS resources have been destroyed. No ongoing cost." >> $GITHUB_STEP_SUMMARY

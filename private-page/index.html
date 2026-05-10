@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-J0K1FTS01N"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-J0K1FTS01N');
+  </script>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <title>Protected Resource — Zero Trust Lab</title>
+
+  <!-- Noindex — behind Cloudflare Access, not for search engines -->
+  <meta name="robots" content="noindex, nofollow">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <style>
+    /* ============================================================
+       ZERO TRUST NETWORK ACCESS LAB — private.html
+       Protected resource — served via Cloudflare Tunnel + Access
+       All styles inline — no external CSS dependency
+       ============================================================ */
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-primary:   #070b14;
+      --bg-secondary: #0a1020;
+      --bg-surface:   #0d1525;
+      --border:       #1a2540;
+      --border-mid:   #2a3a50;
+      --cyan:         #00d4ff;
+      --orange:       #E07B39;
+      --green:        #22c55e;
+      --red:          #E53E3E;
+      --linkedin:     #4a9eda;
+      --text-primary: #f0f4ff;
+      --text-body:    #e8eaf0;
+      --text-muted:   #a0aab8;
+      --text-faint:   #8090a8;
+      --text-dim:     #3a4a60;
+      --font-mono:    'JetBrains Mono', 'Courier New', monospace;
+      --font-serif:   'Playfair Display', Georgia, serif;
+    }
+
+    body {
+      font-family: var(--font-mono);
+      background: var(--bg-primary);
+      color: var(--text-body);
+      font-size: 14px;
+      line-height: 1.6;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Nav ── */
+    .nav {
+      background: var(--bg-primary);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 60px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .nav-logo {
+      font-size: 14px; font-weight: 700; letter-spacing: 3px;
+      color: var(--cyan); text-transform: uppercase; text-decoration: none;
+    }
+    .nav-links { display: flex; gap: 2rem; align-items: center; }
+    .nav-links a {
+      font-size: 11px; color: var(--text-muted); letter-spacing: 1px;
+      text-transform: uppercase; text-decoration: none; transition: color 0.3s ease;
+    }
+    .nav-links a:hover, .nav-links a.active { color: var(--cyan); }
+    .hamburger {
+      display: none; flex-direction: column; gap: 5px;
+      background: transparent; border: none; cursor: pointer; padding: 4px;
+    }
+    .hamburger span { display: block; width: 22px; height: 2px; background: var(--text-muted); }
+    .nav-mobile { display: none; flex-direction: column; background: var(--bg-secondary); border-bottom: 1px solid var(--border); }
+    .nav-mobile.open { display: flex; }
+    .nav-mobile a {
+      font-size: 11px; color: var(--text-muted); letter-spacing: 1px;
+      text-transform: uppercase; text-decoration: none;
+      padding: 1rem 2rem; border-bottom: 1px solid var(--border); transition: color 0.3s;
+    }
+    .nav-mobile a:hover { color: var(--cyan); }
+
+    /* ── Layout ── */
+    .page { max-width: 760px; margin: 0 auto; padding: 0 2rem; flex: 1; }
+    .section { padding: 3rem 0; }
+    .sec-tag  { display: flex; align-items: center; gap: 8px; margin-bottom: 1.5rem; }
+    .sec-line { width: 22px; height: 1px; background: var(--cyan); flex-shrink: 0; }
+    .sec-label { font-size: 13px; color: var(--cyan); letter-spacing: 2px; text-transform: uppercase; }
+
+    /* ── Panel ── */
+    .panel { background: var(--bg-secondary); border: 1px solid var(--border); }
+
+    .panel-head {
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 0.5rem;
+    }
+    .ph-left { display: flex; align-items: center; gap: 8px; }
+    .status-dot {
+      width: 9px; height: 9px; border-radius: 50%;
+      background: var(--green); flex-shrink: 0; transition: background 0.5s;
+    }
+    .status-dot.expired { background: var(--red); }
+    .status-text {
+      font-size: 12px; font-weight: 700; color: var(--green);
+      letter-spacing: 1px; text-transform: uppercase; transition: color 0.5s;
+    }
+    .status-text.expired { color: var(--red); }
+    .session-id { font-size: 11px; color: var(--text-faint); font-family: var(--font-mono); }
+
+    /* ── Cognito section — only shown when ?cid= present ── */
+    .cog-section {
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-surface);
+    }
+    .cog-lbl { font-size: 10px; color: var(--green); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 0.75rem; }
+
+    /* ── Anonymous note — only shown when no ?cid= ── */
+    .anon-note {
+      padding: 0.875rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-surface);
+      display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    }
+    .anon-note-text { font-size: 11px; color: var(--text-faint); }
+    .anon-link {
+      display: inline-block; font-size: 11px; color: var(--cyan);
+      letter-spacing: 1px; text-transform: uppercase;
+      background: transparent; border: none;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 2px; cursor: pointer;
+      font-family: var(--font-mono);
+      transition: border-bottom-color 0.3s ease, letter-spacing 0.3s ease;
+      text-decoration: none;
+    }
+    .anon-link:hover { border-bottom-color: var(--cyan); letter-spacing: 2px; }
+
+    /* ── Identity rows ── */
+    .id-section { padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border); }
+    .id-lbl { font-size: 10px; color: var(--cyan); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 0.75rem; }
+    .id-row {
+      display: grid; grid-template-columns: 180px 1fr; gap: 0.5rem;
+      padding: 5px 0; border-bottom: 1px dashed var(--border);
+    }
+    .id-row:last-child { border-bottom: none; }
+    .id-key  { font-size: 12px; color: var(--text-faint); }
+    .id-val  { font-size: 12px; color: var(--text-primary); font-family: var(--font-mono); }
+    .id-cyan  { color: var(--cyan); }
+    .id-green { color: var(--green); }
+    .id-dim   { color: var(--text-dim); }
+
+    /* ── Timer ── */
+    .timer-section { padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border); }
+    .t-lbl { font-size: 10px; color: var(--text-muted); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 6px; }
+    .t-big {
+      font-family: var(--font-serif); font-size: 56px; font-weight: 700;
+      color: var(--cyan); line-height: 1; transition: color 0.5s;
+    }
+    .t-big.expired { color: var(--red); }
+    .t-sub { font-size: 11px; color: var(--text-faint); margin-top: 4px; }
+
+    /* ── Audit log ── */
+    .log-section { padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border); background: var(--bg-primary); }
+    .log-ttl { font-size: 10px; color: var(--cyan); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 0.5rem; }
+    .log-ln  { font-size: 11px; color: var(--text-faint); font-family: var(--font-mono); line-height: 1.9; }
+    .log-ts-g { color: var(--green); }
+    .log-ts-r { color: var(--red); }
+
+    /* ── Expired section ── */
+    .exp-section { display: none; padding: 2rem 1.5rem; text-align: center; }
+    .exp-title {
+      font-family: var(--font-serif); font-size: 28px; font-weight: 700;
+      color: var(--red); margin-bottom: 0.75rem;
+    }
+    .exp-desc  { font-size: 13px; color: var(--text-muted); line-height: 1.8; margin-bottom: 1.25rem; }
+    .exp-meta  { font-size: 12px; color: var(--text-faint); margin-bottom: 4px; }
+    .exp-actions { max-width: 320px; margin: 1.5rem auto 0; }
+
+    /* Request new session — solid cyan action button */
+    .btn-new {
+      display: block; width: 100%;
+      background: var(--cyan); color: var(--bg-primary);
+      padding: 12px 20px; font-size: 10px; font-weight: 700;
+      letter-spacing: 2px; text-transform: uppercase;
+      border: 2px solid var(--cyan); cursor: pointer;
+      font-family: var(--font-mono);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      text-decoration: none; text-align: center;
+    }
+    .btn-new:hover { transform: translateY(-2px); box-shadow: 0 4px 18px rgba(0, 212, 255, 0.3); }
+
+    /* Divider between action buttons */
+    .share-wrap {
+      border-top: 1px solid var(--border);
+      padding-top: 12px;
+      margin-top: 12px;
+      text-align: left;
+    }
+
+    /* Share on LinkedIn — inline text link, LinkedIn blue */
+    .btn-share {
+      display: inline-block; width: auto;
+      font-size: 11px; color: var(--linkedin);
+      letter-spacing: 2px; text-transform: uppercase;
+      background: transparent; border: none;
+      border-bottom: 1px solid #1a3a50;
+      padding: 0 0 4px 0; cursor: pointer;
+      font-family: var(--font-mono);
+      transition: border-bottom-color 0.3s ease, letter-spacing 0.3s ease;
+    }
+    .btn-share:hover { border-bottom-color: var(--linkedin); letter-spacing: 3px; }
+    .btn-share .arr { display: inline-block; transition: transform 0.3s ease; margin-left: 3px; }
+    .btn-share:hover .arr { transform: translateX(4px); }
+
+    /* ── Footer ── */
+    .footer { background: #050810; border-top: 1px solid var(--border); padding: 2rem; text-align: center; margin-top: auto; }
+    .footer-name  { font-size: 13px; font-weight: 700; color: #d0d8e8; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 0.75rem; }
+    .footer-icons { display: flex; gap: 1.5rem; justify-content: center; margin-bottom: 0.75rem; align-items: center; }
+    .footer-icon  { color: var(--text-faint); font-size: 18px; text-decoration: none; transition: color 0.3s ease, transform 0.3s ease; display: inline-block; }
+    .footer-icon:hover { color: var(--cyan); transform: translateY(-2px); }
+    .footer-nav   { display: flex; gap: 1.5rem; justify-content: center; margin-bottom: 0.75rem; flex-wrap: wrap; }
+    .footer-nav a { font-size: 11px; color: var(--text-faint); letter-spacing: 1px; text-transform: uppercase; text-decoration: none; transition: color 0.3s; }
+    .footer-nav a:hover { color: var(--cyan); }
+    .footer-built { font-size: 10px; letter-spacing: 1px; }
+    .f-orange { color: var(--orange); }
+    .f-cyan   { color: var(--cyan); }
+
+    /* ── Responsive ── */
+    @media (max-width: 700px) {
+      .nav-links { display: none; }
+      .hamburger { display: flex; }
+      .id-row { grid-template-columns: 140px 1fr; }
+      .t-big  { font-size: 44px; }
+    }
+    @media (max-width: 480px) {
+      .id-row { grid-template-columns: 1fr; }
+      .id-key { font-size: 10px; color: var(--cyan); margin-bottom: 1px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ============================================================
+       Navigation
+       ============================================================ -->
+  <nav class="nav">
+    <a href="https://amitwebsite.online" class="nav-logo">AM</a>
+    <div class="nav-links">
+      <a href="https://amitwebsite.online">Home</a>
+      <a href="https://amitwebsite.online/lab.html" class="active">AI Lab</a>
+      <a href="https://amitwebsite.online/contact.html">Contact</a>
+    </div>
+    <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+  <div class="nav-mobile" id="nav-mobile">
+    <a href="https://amitwebsite.online">Home</a>
+    <a href="https://amitwebsite.online/lab.html">AI Lab</a>
+    <a href="https://amitwebsite.online/contact.html">Contact</a>
+  </div>
+
+  <!-- ============================================================
+       Main content
+       ============================================================ -->
+  <div class="page">
+    <div class="section">
+      <div class="sec-tag">
+        <div class="sec-line"></div>
+        <span class="sec-label">Protected Resource</span>
+      </div>
+
+      <div class="panel" id="main-panel">
+
+        <!-- Panel header — status dot + session ID -->
+        <div class="panel-head">
+          <div class="ph-left">
+            <div class="status-dot" id="status-dot"></div>
+            <span class="status-text" id="status-text">You are inside the Zero Trust perimeter</span>
+          </div>
+          <span class="session-id" id="session-id-display">SESSION · —</span>
+        </div>
+
+        <!-- Cognito section — rendered only when ?cid= param present -->
+        <div class="cog-section" id="cog-section" style="display:none">
+          <div class="cog-lbl">External identity — Cognito verified</div>
+          <div class="id-row"><span class="id-key">verified as</span><span class="id-val id-green" id="cog-email">—</span></div>
+          <div class="id-row"><span class="id-key">auth provider</span><span class="id-val">AWS Cognito</span></div>
+          <div class="id-row"><span class="id-key">audit trail</span><span class="id-val id-green">Real identity logged in CloudWatch</span></div>
+        </div>
+
+        <!-- Anonymous note — rendered only when no ?cid= param -->
+        <div class="anon-note" id="anon-note" style="display:none">
+          <span class="anon-note-text">Authenticated anonymously —</span>
+          <a class="anon-link" href="https://webapp.amitwebsite.online?path=cognito">
+            Try Cognito path for verified identity →
+          </a>
+        </div>
+
+        <!-- Okta identity section -->
+        <div class="id-section">
+          <div class="id-lbl">Identity — Okta OIDC</div>
+          <div class="id-row"><span class="id-key">account</span><span class="id-val id-cyan" id="okta-email">—</span></div>
+          <div class="id-row"><span class="id-key">group</span><span class="id-val">JITDemo</span></div>
+          <div class="id-row"><span class="id-key">access level</span><span class="id-val">Read Only</span></div>
+          <div class="id-row"><span class="id-key">account type</span><span class="id-val">Ephemeral — exists only for this session</span></div>
+        </div>
+
+        <!-- Session context section -->
+        <div class="id-section">
+          <div class="id-lbl">Session Context</div>
+          <div class="id-row"><span class="id-key">auth method</span><span class="id-val id-green" id="auth-method">Okta OIDC + Cloudflare Access</span></div>
+          <div class="id-row"><span class="id-key">location</span><span class="id-val" id="session-location">—</span></div>
+          <div class="id-row"><span class="id-key">session started</span><span class="id-val" id="session-started">—</span></div>
+          <div class="id-row"><span class="id-key">protected by</span><span class="id-val">Cloudflare Access · JITDemo policy</span></div>
+        </div>
+
+        <!-- Timer section — hidden on expiry -->
+        <div class="timer-section" id="timer-section">
+          <div class="t-lbl">Session expires in</div>
+          <div class="t-big" id="timer-display">—</div>
+          <div class="t-sub">Account auto-deleted when timer reaches zero</div>
+        </div>
+
+        <!-- Audit log section — hidden on expiry -->
+        <div class="log-section" id="log-section">
+          <div class="log-ttl">Live audit log</div>
+          <div id="log-lines"></div>
+        </div>
+
+        <!-- Expired section — shown on expiry -->
+        <div class="exp-section" id="exp-section">
+          <div class="exp-title">Session Expired</div>
+          <p class="exp-desc">Your ephemeral Okta account has been automatically deleted.<br>Access to this resource has been revoked.</p>
+          <div class="exp-meta" id="exp-account">—</div>
+          <div class="exp-meta" id="exp-duration">—</div>
+          <div class="exp-meta" id="exp-method">Deleted by: EventBridge + Lambda jit-revoker</div>
+          <div class="exp-actions">
+            <a class="btn-new" href="https://webapp.amitwebsite.online"
+              onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 4px 18px rgba(0,212,255,0.3)'"
+              onmouseout="this.style.transform='';this.style.boxShadow=''">
+              Request a new session
+            </a>
+            <div class="share-wrap">
+              <button class="btn-share" id="share-btn"
+                onmouseover="this.style.borderBottomColor='#4a9eda';this.style.letterSpacing='3px';this.querySelector('.arr').style.transform='translateX(4px)'"
+                onmouseout="this.style.borderBottomColor='#1a3a50';this.style.letterSpacing='2px';this.querySelector('.arr').style.transform='translateX(0)'">
+                Share on LinkedIn <span class="arr">→</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       Footer
+       ============================================================ -->
+  <footer class="footer">
+    <div class="footer-name">Amit Maurya</div>
+    <div class="footer-icons">
+      <a href="mailto:amit.maurya2012@gmail.com" class="footer-icon" title="Email"><i class="fas fa-envelope"></i></a>
+      <a href="https://www.linkedin.com/in/amitmaurya" target="_blank" rel="noopener" class="footer-icon" title="LinkedIn"><i class="fab fa-linkedin"></i></a>
+      <a href="https://github.com/amitmaurya001/zerotrust-aws-lab" target="_blank" rel="noopener" class="footer-icon" title="GitHub"><i class="fab fa-github"></i></a>
+      <a href="https://topmate.io/amit_maurya01" target="_blank" rel="noopener" class="footer-icon" title="Topmate">
+        <img src="https://amitwebsite.online/assets/images/topmate.png" width="18" height="18" alt="Topmate" style="vertical-align:middle;opacity:0.7;border-radius:50%;filter:grayscale(30%)">
+      </a>
+    </div>
+    <div class="footer-nav">
+      <a href="https://amitwebsite.online">Home</a>
+      <a href="https://amitwebsite.online/lab.html">AI Lab</a>
+      <a href="https://amitwebsite.online/contact.html">Contact</a>
+    </div>
+    <div class="footer-built">
+      <span class="f-orange">© 2026 Amit Maurya · Built with Claude Code · Agentic AI DevOps</span>
+      <span class="f-cyan"> · Cloudflare · Okta · AWS · Terraform · GitHub Actions OIDC</span>
+    </div>
+  </footer>
+
+  <!-- ============================================================
+       JavaScript — all inline, no external dependencies
+       ============================================================ -->
+  <script>
+    /* ── CONFIG ── */
+    var API_URL          = 'https://REPLACE_WITH_API_GW_URL';
+    var WEBAPP_URL       = 'https://webapp.amitwebsite.online';
+    var SESSION_DURATION = 180; /* 3 minutes in seconds */
+
+    /* ── State ── */
+    var sessionSeconds = SESSION_DURATION;
+    var sessionInterval = null;
+    var sessionStartTime = null;
+    var isCognito = false;
+    var cognitoEmail = null;
+    var oktaEmail = null;
+    var sessionNumber = null;
+
+    /* ── On page load ── */
+    window.addEventListener('load', function () {
+      initPage();
+    });
+
+    function initPage() {
+      /* Step 1 — decode CF_Authorization JWT cookie */
+      var jwt = getCFAuthCookie();
+      if (!jwt) {
+        /* No JWT — should not happen (Cloudflare Access would have blocked) */
+        /* Show generic error state */
+        document.getElementById('status-text').textContent = 'Session not found';
+        document.getElementById('status-dot').style.background = 'var(--text-dim)';
+        return;
+      }
+
+      var claims = decodeJwt(jwt);
+      if (!claims) {
+        document.getElementById('status-text').textContent = 'Unable to decode session';
+        return;
+      }
+
+      /* Step 2 — extract Okta identity from JWT */
+      oktaEmail    = claims.email || claims.sub || '—';
+      sessionNumber = claims.session_number || null;
+
+      /* Step 3 — check for Cognito cid URL param */
+      var params = new URLSearchParams(window.location.search);
+      var cid    = params.get('cid');
+      if (cid) {
+        try {
+          var decoded = atob(cid);
+          var parts   = decoded.split('|');
+          if (parts.length >= 2) {
+            cognitoEmail = parts[0];
+            isCognito    = true;
+          }
+        } catch (e) {
+          /* Invalid cid — treat as anonymous */
+          isCognito = false;
+        }
+      }
+
+      /* Step 4 — calculate time remaining from JWT exp */
+      var now      = Math.floor(Date.now() / 1000);
+      var exp      = claims.exp || (now + SESSION_DURATION);
+      var iat      = claims.iat || (now - (SESSION_DURATION - (exp - now)));
+      sessionSeconds  = Math.max(0, exp - now);
+      sessionStartTime = new Date(iat * 1000);
+
+      /* Step 5 — populate page */
+      renderPage(claims);
+
+      /* Step 6 — start countdown if session still active */
+      if (sessionSeconds > 0) {
+        startCountdown();
+      } else {
+        expireSession(claims);
+      }
+
+      /* Step 7 — optionally fetch Cognito email from API if ?cid present */
+      if (isCognito && cognitoEmail) {
+        fetchSessionStatus(jwt);
+      }
+
+      /* GA event */
+      gaEvent('protected_page_loaded', {
+        path: isCognito ? 'cognito' : 'anonymous'
+      });
+    }
+
+    function renderPage(claims) {
+      /* Populate identity fields */
+      document.getElementById('okta-email').textContent = oktaEmail;
+
+      /* Session ID display */
+      var sid = oktaEmail ? oktaEmail.split('@')[0].toUpperCase() : '—';
+      var num = sessionNumber ? ' · #' + sessionNumber : '';
+      document.getElementById('session-id-display').textContent = 'SESSION · ' + sid + num;
+
+      /* Location from JWT country claim */
+      var country = claims.country || claims.cf_country || '—';
+      document.getElementById('session-location').textContent = country;
+
+      /* Session started */
+      if (sessionStartTime) {
+        document.getElementById('session-started').textContent =
+          sessionStartTime.toISOString().replace('T', ' ').substring(0, 19) + ' UTC';
+      }
+
+      /* Auth method */
+      if (isCognito) {
+        document.getElementById('auth-method').textContent = 'Cognito + Okta OIDC + Cloudflare Access';
+      }
+
+      /* Show Cognito or anonymous section */
+      if (isCognito && cognitoEmail) {
+        document.getElementById('cog-email').textContent = cognitoEmail;
+        document.getElementById('cog-section').style.display = 'block';
+        document.getElementById('anon-note').style.display   = 'none';
+      } else {
+        document.getElementById('cog-section').style.display = 'none';
+        document.getElementById('anon-note').style.display   = 'flex';
+      }
+
+      /* Render initial audit log */
+      renderInitialLog(claims);
+    }
+
+    function renderInitialLog(claims) {
+      var container = document.getElementById('log-lines');
+      container.innerHTML = '';
+
+      var startedStr = sessionStartTime
+        ? sessionStartTime.toISOString().replace('T', ' ').substring(11, 19) + ' UTC'
+        : '—';
+
+      var lines = [];
+
+      if (isCognito && cognitoEmail) {
+        lines.push({ ts: startedStr, text: 'Cognito identity verified · ' + cognitoEmail, red: false });
+      }
+      lines.push({ ts: startedStr, text: 'user ' + oktaEmail + ' created in Okta · status ACTIVE', red: false });
+      lines.push({ ts: startedStr, text: 'group JITDemo assigned · Cloudflare Access session issued', red: false });
+      lines.push({ ts: startedStr, text: 'EventBridge rule scheduled · auto-revoke in ' + Math.ceil(SESSION_DURATION / 60) + ' minutes', red: false });
+
+      lines.forEach(function (line) {
+        addLogLine(container, line.ts, line.text, line.red);
+      });
+    }
+
+    function addLogLine(container, ts, text, isRed) {
+      var div = document.createElement('div');
+      div.className = 'log-ln';
+      var cls = isRed ? 'log-ts-r' : 'log-ts-g';
+      div.innerHTML = '<span class="' + cls + '">[' + ts + ']</span> ' + text;
+      container.appendChild(div);
+    }
+
+    /* ── Countdown timer ── */
+    function startCountdown() {
+      updateTimerDisplay(sessionSeconds);
+      sessionInterval = setInterval(function () {
+        sessionSeconds--;
+        updateTimerDisplay(sessionSeconds);
+        if (sessionSeconds <= 0) {
+          clearInterval(sessionInterval);
+          expireSession({});
+        }
+      }, 1000);
+    }
+
+    function updateTimerDisplay(seconds) {
+      var el = document.getElementById('timer-display');
+      if (seconds <= 0) {
+        el.textContent = '0:00';
+        return;
+      }
+      var m = Math.floor(seconds / 60);
+      var s = seconds % 60;
+      el.textContent = m + ':' + (s < 10 ? '0' : '') + s;
+    }
+
+    /* ── Session expired ── */
+    function expireSession(claims) {
+      /* Update header status */
+      document.getElementById('status-dot').classList.add('expired');
+      document.getElementById('status-text').classList.add('expired');
+      document.getElementById('status-text').textContent = 'Session expired';
+      document.getElementById('timer-display').classList.add('expired');
+
+      /* Add revoke log line before hiding log */
+      var now = new Date().toISOString().replace('T', ' ').substring(11, 19) + ' UTC';
+      var container = document.getElementById('log-lines');
+      addLogLine(container, now, 'jit-revoker fired · user ' + (oktaEmail || '—') + ' deactivated · deleted · rule cleaned up', true);
+
+      /* Hide timer and log, show expired section */
+      setTimeout(function () {
+        document.getElementById('timer-section').style.display = 'none';
+        document.getElementById('log-section').style.display   = 'none';
+        document.getElementById('exp-section').style.display   = 'block';
+      }, 800);
+
+      /* Populate expired section metadata */
+      document.getElementById('exp-account').textContent  = 'Account: ' + (oktaEmail || '—');
+      document.getElementById('exp-duration').textContent = 'Duration: ' + Math.ceil(SESSION_DURATION / 60) + ' minutes';
+      if (isCognito && cognitoEmail) {
+        document.getElementById('exp-method').textContent = 'Audit entry written to CloudWatch · identity: ' + cognitoEmail;
+      }
+
+      /* Wire up LinkedIn share */
+      var shareBtn = document.getElementById('share-btn');
+      if (shareBtn) {
+        shareBtn.onclick = function () { shareLinkedIn(); };
+      }
+
+      gaEvent('session_expired', { path: isCognito ? 'cognito' : 'anonymous' });
+    }
+
+    /* ── Read CF_Authorization cookie ── */
+    function getCFAuthCookie() {
+      var cookies = document.cookie.split(';');
+      for (var i = 0; i < cookies.length; i++) {
+        var c = cookies[i].trim();
+        if (c.startsWith('CF_Authorization=')) {
+          return c.substring('CF_Authorization='.length);
+        }
+      }
+      return null;
+    }
+
+    /* ── Decode JWT payload ── */
+    function decodeJwt(token) {
+      try {
+        var parts   = token.split('.');
+        if (parts.length !== 3) return null;
+        var payload = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+        /* Pad base64 if needed */
+        while (payload.length % 4 !== 0) payload += '=';
+        return JSON.parse(atob(payload));
+      } catch (e) {
+        console.error('JWT decode failed:', e);
+        return null;
+      }
+    }
+
+    /* ── Optionally fetch session status from API ── */
+    function fetchSessionStatus(jwt) {
+      fetch(API_URL + '/session-status', {
+        headers: { 'Authorization': 'Bearer ' + jwt }
+      })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          /* Confirm Cognito email from server if available */
+          if (data.cognito_email && !cognitoEmail) {
+            cognitoEmail = data.cognito_email;
+            document.getElementById('cog-email').textContent = cognitoEmail;
+            document.getElementById('cog-section').style.display = 'block';
+          }
+          /* Sync remaining time from server if significantly different */
+          if (data.time_remaining && Math.abs(data.time_remaining - sessionSeconds) > 5) {
+            sessionSeconds = data.time_remaining;
+          }
+        })
+        .catch(function () {
+          /* Non-critical — page works fine without this */
+        });
+    }
+
+    /* ── LinkedIn share ── */
+    function shareLinkedIn() {
+      var num  = sessionNumber ? '#' + sessionNumber : 'a session';
+      var text = 'I was session ' + num + ' on this live Zero Trust demo.\n' +
+        'Temporary Okta account provisioned just for me. Auto-revoked ' + Math.ceil(SESSION_DURATION / 60) + ' minutes later.\n' +
+        'No VPN. No install. All 5 NIST SP 800-207 pillars running in a browser.\n\n' +
+        'Worth ' + Math.ceil(SESSION_DURATION / 60) + ' minutes: webapp.amitwebsite.online\n\n' +
+        'Built by Amit Maurya — Cloud & AI Security Architect\n' +
+        '#ZeroTrust #ZTNA #NIST #CloudSecurity #Cloudflare #Okta';
+
+      var url = 'https://www.linkedin.com/sharing/share-offsite/?text=' + encodeURIComponent(text);
+      window.open(url, '_blank', 'noopener,noreferrer');
+      gaEvent('linkedin_shared', { path: isCognito ? 'cognito' : 'anonymous' });
+    }
+
+    /* ── GA event helper ── */
+    function gaEvent(name, params) {
+      if (typeof gtag !== 'undefined') gtag('event', name, params || {});
+    }
+
+    /* ── Hamburger menu ── */
+    document.addEventListener('DOMContentLoaded', function () {
+      var hamburger = document.getElementById('hamburger');
+      var navMobile = document.getElementById('nav-mobile');
+      if (hamburger && navMobile) {
+        hamburger.addEventListener('click', function () {
+          navMobile.classList.toggle('open');
+        });
+        navMobile.querySelectorAll('a').forEach(function (link) {
+          link.addEventListener('click', function () {
+            navMobile.classList.remove('open');
+          });
+        });
+      }
+    });
+  </script>
+
+</body>
+</html>
