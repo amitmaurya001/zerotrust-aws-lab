@@ -192,6 +192,7 @@ resource "aws_cloudwatch_dashboard" "zerotrust" {
         width  = 12
         height = 6
         properties = {
+          region = local.region
           title  = "JIT Sessions — Provisioned vs Deleted"
           period = 3600
           stat   = "Sum"
@@ -210,6 +211,7 @@ resource "aws_cloudwatch_dashboard" "zerotrust" {
         width  = 12
         height = 6
         properties = {
+          region = local.region
           title  = "Lambda Errors"
           period = 300
           stat   = "Sum"
@@ -228,6 +230,7 @@ resource "aws_cloudwatch_dashboard" "zerotrust" {
         width  = 12
         height = 6
         properties = {
+          region = local.region
           title  = "API Gateway Requests"
           period = 300
           stat   = "Sum"
@@ -246,6 +249,7 @@ resource "aws_cloudwatch_dashboard" "zerotrust" {
         width  = 12
         height = 6
         properties = {
+          region = local.region
           title  = "Lambda Duration (ms)"
           period = 300
           stat   = "Average"

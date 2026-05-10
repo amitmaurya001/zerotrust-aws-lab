@@ -165,7 +165,7 @@ resource "aws_iam_role" "scheduler" {
 
   tags = {
     Name    = "zerotrust-scheduler-role"
-    Purpose = "EventBridge Scheduler → jit-revoker invocation"
+    Purpose = "EventBridge Scheduler - jit-revoker invocation"
   }
 }
 

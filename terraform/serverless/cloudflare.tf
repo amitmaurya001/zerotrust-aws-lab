@@ -81,7 +81,7 @@ resource "cloudflare_zero_trust_access_policy" "jitdemo_tf" {
   account_id     = var.cloudflare_account_id
   application_id = cloudflare_zero_trust_access_application.private_tf.id
   name           = "Allow JIT Demo Users - TF"
-  precedence     = 1
+  precedence     = 2
   decision       = "allow"
 
   include {
