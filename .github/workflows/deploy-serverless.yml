@@ -167,6 +167,12 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+      
+      - name: Build Lambda package
+        run: |
+          cd lambda
+          pip install -r requirements.txt -t ./package
+          cp jit_provisioner.py jit_revoker.py session_checker.py ./package/
 
       - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
