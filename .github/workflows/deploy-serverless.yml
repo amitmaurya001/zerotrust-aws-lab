@@ -18,7 +18,7 @@
 #   7. Manual approval gate (environment: production)
 #   8. terraform apply
 #   9. Sync webapp/index.html → S3 webapp bucket
-#  10. Sync private-page/private.html → S3 private bucket
+#  10. Sync private-page/index.html → S3 private bucket
 #
 # Secrets required (GitHub Environment: production):
 #   AWS_ROLE_ARN_SERVERLESS   — OIDC role ARN
@@ -184,9 +184,9 @@ jobs:
             --cache-control "public, max-age=300"
 
       # Sync private page — no-cache (behind Access, always fresh)
-      - name: Sync private-page/private.html to S3
+      - name: Sync private-page/index.html to S3
         run: |
-          aws s3 cp private-page/private.html \
+          aws s3 cp private-page/index.html \
             s3://private.amitwebsite.online/index.html \
             --content-type "text/html" \
             --cache-control "no-cache, no-store, must-revalidate"
