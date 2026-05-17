@@ -109,7 +109,7 @@ resource "aws_cognito_user_pool_client" "webapp" {
   allowed_oauth_flows                  = ["code"]
   allowed_oauth_scopes                 = ["openid", "email", "profile"]
   allowed_oauth_flows_user_pool_client = true
-  supported_identity_providers         = ["COGNITO"]
+  supported_identity_providers         = ["COGNITO" , "Google"]
 
   # Callback: webapp receives ?code= and exchanges for token
   callback_urls = [local.webapp_url]
@@ -138,4 +138,22 @@ resource "aws_cognito_user_pool_client" "webapp" {
     "ALLOW_USER_SRP_AUTH",
     "ALLOW_REFRESH_TOKEN_AUTH",
   ]
+}
+###############Google - Cognito Identity Provider###############
+
+resource "aws_cognito_identity_provider" "google" {
+  user_pool_id  = aws_cognito_user_pool.main.id
+  provider_name = "Google"
+  provider_type = "Google"
+
+  provider_details = {
+    client_id        = var.google_client_id
+    client_secret    = var.google_client_secret
+    authorize_scopes = "email profile openid"
+  }
+
+  attribute_mapping = {
+    email    = "email"
+    username = "sub"
+  }
 }

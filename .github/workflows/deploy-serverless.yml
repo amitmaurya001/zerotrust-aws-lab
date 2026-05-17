@@ -103,6 +103,8 @@ jobs:
           TF_VAR_okta_client_id:         ${{ secrets.OKTA_CLIENT_ID }}
           TF_VAR_okta_client_secret:     ${{ secrets.OKTA_CLIENT_SECRET }}
           TF_VAR_alert_email:            ${{ secrets.ALERT_EMAIL }}
+          TF_VAR_google_client_id:       ${{ secrets.GOOGLE_CLIENT_ID }}
+          TF_VAR_google_client_secret:   ${{ secrets.GOOGLE_CLIENT_SECRET }}  
 
       # ── terraform validate ────────────────────────────────────────────────────
       - name: Terraform Validate
@@ -124,6 +126,8 @@ jobs:
           TF_VAR_okta_client_id:         ${{ secrets.OKTA_CLIENT_ID }}
           TF_VAR_okta_client_secret:     ${{ secrets.OKTA_CLIENT_SECRET }}
           TF_VAR_alert_email:            ${{ secrets.ALERT_EMAIL }}
+          TF_VAR_google_client_id:       ${{ secrets.GOOGLE_CLIENT_ID }}
+          TF_VAR_google_client_secret:   ${{ secrets.GOOGLE_CLIENT_SECRET }}
         # exit code 0 = no changes, 1 = error, 2 = changes present — all ok here
         continue-on-error: false
 
@@ -147,6 +151,8 @@ jobs:
           TF_VAR_okta_client_id:         ${{ secrets.OKTA_CLIENT_ID }}
           TF_VAR_okta_client_secret:     ${{ secrets.OKTA_CLIENT_SECRET }}
           TF_VAR_alert_email:            ${{ secrets.ALERT_EMAIL }}
+          TF_VAR_google_client_id:       ${{ secrets.GOOGLE_CLIENT_ID }}
+          TF_VAR_google_client_secret:   ${{ secrets.GOOGLE_CLIENT_SECRET }}
 
       # ── Capture Terraform outputs ─────────────────────────────────────────────
       - name: Capture Terraform outputs
