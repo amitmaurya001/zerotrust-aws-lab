@@ -384,12 +384,9 @@
         <span class="cert-pill hl">Okta OIDC</span>
         <span class="cert-pill hl">AWS Lambda</span>
         <span class="cert-pill hl">Cognito</span>
-        <span class="cert-pill">JIT Provisioning</span>
-        <span class="cert-pill">mTLS</span>
-        <span class="cert-pill">HMAC</span>
-        <span class="cert-pill">Device Posture</span>
         <span class="cert-pill hl">API Gateway</span>
         <span class="cert-pill hl">EventBridge</span>
+        <span class="cert-pill">JIT Provisioning</span>
         <span class="cert-pill">SSM SecureString</span>
         <span class="cert-pill">Amazon Bedrock</span>
         <span class="cert-pill">Python 3.12</span>
@@ -404,7 +401,15 @@
        Architecture diagram — PNG with lightbox zoom
        ============================================================ -->
   <div style="background:var(--bg-secondary);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:1.5rem 2rem;">
-    <div style="font-size:11px;color:var(--text-faint);letter-spacing:2px;text-transform:uppercase;text-align:center;margin-bottom:0.75rem;">Architecture</div>
+    <div style="display:flex;align-items:center;justify-content:center;gap:2rem;margin-bottom:1rem;flex-wrap:wrap;">
+      <div style="font-size:13px;color:var(--cyan);letter-spacing:3px;text-transform:uppercase;font-weight:700;">Architecture</div>
+      <a href="https://github.com/amitmaurya001/zerotrust-aws-lab" target="_blank" rel="noopener"
+        style="font-size:11px;color:var(--cyan);text-decoration:none;letter-spacing:1px;text-transform:uppercase;display:inline-flex;align-items:center;gap:6px;border-bottom:1px solid transparent;transition:border-color 0.2s;"
+        onmouseover="this.style.borderBottomColor='var(--cyan)'"
+        onmouseout="this.style.borderBottomColor='transparent'">
+        <i class="fab fa-github"></i> View on GitHub &rarr;
+      </a>
+    </div>
     <div style="max-width:900px;margin:0 auto;position:relative;">
       <img
         src="assets/images/arch-diagram.png"
@@ -474,7 +479,7 @@
           <div class="card-title">No login required</div>
           <div class="card-desc">Provision a temporary Okta account instantly. Pure JIT lifecycle — provisioned in real time, auto-revoked when timer expires.</div>
 
-          <div class="hint-txt" id="a-hint" style="display:none;margin-bottom:0.5rem;">Use these credentials on the next screen &mdash; open in incognito for a fresh session</div>
+          <div class="hint-txt" id="a-hint" style="display:none;margin-bottom:0.5rem;">Use these credentials &mdash; click Access Protected Page below, open in incognito for a fresh session</div>
           <div class="cred-box" id="a-cred">
             <div class="cred-grid">
               <div>
@@ -524,7 +529,7 @@
             <span>Authenticated as &nbsp;<strong id="c-cognito-email">—</strong>&nbsp; via Cognito</span>
           </div>
 
-          <div class="hint-txt" id="c-hint" style="display:none;margin-bottom:0.5rem;">Use these credentials on the next screen &mdash; open in incognito for a fresh session</div>
+          <div class="hint-txt" id="c-hint" style="display:none;margin-bottom:0.5rem;">Use these credentials &mdash; click Access Protected Page below, open in incognito for a fresh session</div>
           <div class="cred-box" id="c-cred">
             <div class="cred-grid">
               <div>
@@ -623,7 +628,7 @@
          ============================================================ -->
     <div class="divider"></div>
     <div class="section">
-      <div class="sec-tag" style="margin-left:0;padding-left:0;"><div class="sec-line"></div><span class="sec-label">Architecture</span></div>
+      <div class="sec-tag" style="margin-left:0;padding-left:0;"><div class="sec-line"></div><span class="sec-label">Zero Trust Pillars</span></div>
       <div class="sec-title">NIST SP 800-207 coverage</div>
       <p class="sec-sub">Every pillar has a concrete, demoable control.</p>
       <div class="pillars-grid">
@@ -891,7 +896,7 @@
       document.getElementById('a-cred').style.display  = 'none';
       document.getElementById('a-log').style.display   = 'none';
       document.getElementById('a-hint').style.display  = 'none';
-      document.getElementById('a-hint').textContent    = 'Use these credentials on the next screen — open in incognito for a fresh session';
+      document.getElementById('a-hint').textContent    = 'Use these credentials — click Access Protected Page below, open in incognito for a fresh session';
       document.getElementById('a-timer').textContent   = '—';
       document.getElementById('a-timer').classList.remove('expired');
       document.getElementById('a-log-lines').innerHTML = '';
@@ -1024,7 +1029,8 @@
       document.getElementById('c-location').textContent = userLocation;
 
       var lines = data.log_lines || [
-        '[' + new Date().toISOString().substring(11, 19) + ' UTC] Cognito identity verified · ' + (document.getElementById('c-cognito-email').textContent),
+       // '[' + new Date().toISOString().substring(11, 19) + ' UTC] Cognito identity verified · ' + (document.getElementById('c-cognito-email').textContent),
+        '[' + new Date().toISOString().substring(11, 19) + ' UTC] Cognito identity verified · ' + (window._cognitoEmail || ''),
         '[' + new Date().toISOString().substring(11, 19) + ' UTC] user ' + (data.email || '') + ' created · group JITDemo assigned · session #' + (data.session_number || '—'),
         '[' + new Date().toISOString().substring(11, 19) + ' UTC] EventBridge rule scheduled · fires in 3 minutes',
       ];
@@ -1034,7 +1040,10 @@
       document.getElementById('c-log').style.display  = 'block';
       document.getElementById('c-hint').style.display = 'block';
 
-      setAccessBtn('c-access-btn', 'Provisioned ✓', 'locked');
+      //  setAccessBtn('c-access-btn', 'Provisioned ✓', 'locked');
+      document.getElementById('c-access-btn').className = 'btn-provisioned';
+      document.getElementById('c-access-btn').textContent = 'Provisioned \u2713';
+      document.getElementById('c-access-btn').onclick = null;
 
       /* Pass Cognito email to private page via signed URL param */
       var privateUrl = PRIVATE_PAGE_URL + '?cid=' + encodeURIComponent(btoa((window._cognitoEmail || '') + '|' + Date.now()));
@@ -1072,7 +1081,7 @@
       document.getElementById('c-cred').style.display  = 'none';
       document.getElementById('c-log').style.display   = 'none';
       document.getElementById('c-hint').style.display  = 'none';
-      document.getElementById('c-hint').textContent    = 'Use these credentials on the next screen — open in incognito for a fresh session';
+      document.getElementById('c-hint').textContent    = 'Use these credentials — click Access Protected Page below, open in incognito for a fresh session';
       document.getElementById('c-timer').textContent   = '—';
       document.getElementById('c-timer').classList.remove('expired');
       document.getElementById('c-log-lines').innerHTML = '';
