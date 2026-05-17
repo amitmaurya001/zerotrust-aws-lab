@@ -692,8 +692,8 @@
     window.addEventListener('load', function () {
       fetchLocation();
       fetchSessionCount();
-      checkHealthAll();
-      setInterval(checkHealthAll, 30000);
+    //checkHealthAll();
+    //setInterval(checkHealthAll, 30000);
 
       /* Check if returning from Cognito redirect */
       var params = new URLSearchParams(window.location.search);
@@ -742,41 +742,43 @@
     }
 
     /* ── Health check for EC2 servers ── */
-    var servers = [
-      { key: 'user-api',    url: 'https://user-api.amitwebsite.online/health' },
-      { key: 'payment-api', url: 'https://payment-api.amitwebsite.online/health' },
-      { key: 'monitoring',  url: 'https://monitoring.amitwebsite.online/health' },
-      { key: 'db-admin',    url: 'https://db-admin.amitwebsite.online/health' },
-      { key: 'admin',       url: 'https://admin.amitwebsite.online/health' },
-    ];
+    // var servers = [
+    //  { key: 'user-api',    url: 'https://user-api.amitwebsite.online/health' },
+    //{ key: 'payment-api', url: 'https://payment-api.amitwebsite.online/health' },
+    //  { key: 'monitoring',  url: 'https://monitoring.amitwebsite.online/health' },
+    //  { key: 'db-admin',    url: 'https://db-admin.amitwebsite.online/health' },
+    //  { key: 'admin',       url: 'https://admin.amitwebsite.online/health' },
+   // ];
 
-    function checkHealthAll() {
-      servers.forEach(function (s) { checkHealth(s.key, s.url); });
-    }
+    //function checkHealthAll() {
+    //  servers.forEach(function (s) { checkHealth(s.key, s.url); });
+   // }
 
-    function checkHealth(key, url) {
-      var dot   = document.getElementById('dot-' + key);
-      var badge = document.getElementById('badge-' + key);
+    //function checkHealth(key, url) {
+    //  var dot   = document.getElementById('dot-' + key);
+    //  var badge = document.getElementById('badge-' + key);
       /* Set checking state */
-      dot.className   = 'sdot sd-a';
-      badge.className = 'sp sp-chk';
-      badge.textContent = 'Checking';
-      fetch(url, { method: 'GET', signal: AbortSignal.timeout(5000) })
-        .then(function (r) {
-          if (r.ok) {
-            dot.className   = 'sdot sd-g';
-            badge.className = 'sp sp-on';
-            badge.textContent = 'Online';
-          } else { setOffline(dot, badge); }
-        })
-        .catch(function () { setOffline(dot, badge); });
+    //  dot.className   = 'sdot sd-a';
+    //  badge.className = 'sp sp-chk';
+    //  badge.textContent = 'Checking';
+    //  fetch(url, { method: 'GET', signal: AbortSignal.timeout(5000) })
+    //    .then(function (r) {
+    //      if (r.ok) {
+    //        dot.className   = 'sdot sd-g';
+    //        badge.className = 'sp sp-on';
+    //        badge.textContent = 'Online';
+    //      } else { setOffline(dot, badge); }
+    //    })
+    //    .catch(function () { setOffline(dot, badge); });
     }
 
-    function setOffline(dot, badge) {
-      dot.className   = 'sdot sd-off';
-      badge.className = 'sp sp-off';
-      badge.textContent = 'Offline';
-    }
+   // function setOffline(dot, badge) {
+   //   dot.className   = 'sdot sd-off';
+   //   badge.className = 'sp sp-off';
+   //   badge.textContent = 'Offline';
+   // }
+
+
 
     /* ── GA event helper ── */
     function gaEvent(name, params) {
