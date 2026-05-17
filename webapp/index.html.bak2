@@ -353,6 +353,7 @@
       <a href="https://amitwebsite.online">Home</a>
       <a href="https://amitwebsite.online/lab.html" class="active">AI Lab</a>
       <a href="https://amitwebsite.online/contact.html">Contact</a>
+      <a href="https://github.com/amitmaurya001/zerotrust-aws-lab" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:5px;"><i class="fab fa-github"></i> Repo</a>
     </div>
     <button class="hamburger" id="hamburger" aria-label="Toggle menu">
       <span></span><span></span><span></span>
@@ -362,6 +363,7 @@
     <a href="https://amitwebsite.online">Home</a>
     <a href="https://amitwebsite.online/lab.html">AI Lab</a>
     <a href="https://amitwebsite.online/contact.html">Contact</a>
+    <a href="https://github.com/amitmaurya001/zerotrust-aws-lab" target="_blank" rel="noopener">GitHub Repo</a>
   </div>
 
   <!-- ============================================================
@@ -388,11 +390,6 @@
         <span class="cert-pill">mTLS</span>
         <span class="cert-pill">HMAC</span>
         <span class="cert-pill">Device Posture</span>
-        <span class="cert-pill hl">API Gateway</span>
-        <span class="cert-pill hl">EventBridge</span>
-        <span class="cert-pill">SSM SecureString</span>
-        <span class="cert-pill">Amazon Bedrock</span>
-        <span class="cert-pill">Python 3.12</span>
         <span class="cert-pill">Terraform</span>
         <span class="cert-pill">GitHub Actions OIDC</span>
       </div>
@@ -401,39 +398,23 @@
 
 
   <!-- ============================================================
-       Architecture diagram — PNG with lightbox zoom
+       Architecture diagram placeholder
+       Replace the SVG comment below with the full inline SVG
+       when ready — or load from /assets/arch-diagram.svg
        ============================================================ -->
-  <div style="background:var(--bg-secondary);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:1.5rem 2rem;">
-    <div style="font-size:11px;color:var(--text-faint);letter-spacing:2px;text-transform:uppercase;text-align:center;margin-bottom:0.75rem;">Architecture</div>
-    <div style="max-width:900px;margin:0 auto;position:relative;">
-      <img
-        src="assets/images/arch-diagram.png"
-        alt="Zero Trust Network Access Lab — Architecture Diagram"
-        title="Click to zoom"
-        onclick="document.getElementById('arch-modal').style.display='flex'"
-        style="width:100%;border:1px solid var(--border);cursor:zoom-in;display:block;transition:opacity 0.2s;"
-        onmouseover="this.style.opacity='0.85'"
-        onmouseout="this.style.opacity='1'"
-      >
-      <div style="text-align:center;margin-top:0.5rem;font-size:10px;color:var(--text-faint);letter-spacing:1px;">Click to expand</div>
-    </div>
+  <div style="background:var(--bg-secondary);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:0.75rem 2rem;display:flex;align-items:center;justify-content:center;gap:1rem;">
+    <span style="font-size:11px;color:var(--text-faint);letter-spacing:1px;text-transform:uppercase;">Architecture</span>
+    <button onclick="document.getElementById('arch-modal').style.display='flex'" style="font-size:11px;color:var(--cyan);background:transparent;border:none;border-bottom:1px solid var(--border);padding:0 0 2px;cursor:pointer;font-family:var(--font-mono);letter-spacing:1px;text-transform:uppercase;">View diagram &rarr;</button>
   </div>
 
-  <!-- Architecture fullscreen lightbox -->
-  <div id="arch-modal"
-    onclick="this.style.display='none'"
-    style="display:none;position:fixed;inset:0;background:rgba(7,11,20,0.96);z-index:999;align-items:center;justify-content:center;padding:1rem;cursor:zoom-out;">
-    <img
-      src="assets/images/arch-diagram.png"
-      alt="Architecture Diagram — fullscreen"
-      style="max-width:95vw;max-height:95vh;object-fit:contain;border:1px solid var(--border);"
-      onclick="event.stopPropagation()"
-    >
-    <button
-      onclick="document.getElementById('arch-modal').style.display='none'"
-      style="position:fixed;top:1.5rem;right:1.5rem;background:var(--bg-surface);border:1px solid var(--border);color:var(--text-muted);font-size:20px;width:36px;height:36px;cursor:pointer;display:flex;align-items:center;justify-content:center;">
-      &times;
-    </button>
+  <!-- Architecture modal -->
+  <div id="arch-modal" onclick="if(event.target===this)this.style.display='none'" style="display:none;position:fixed;inset:0;background:rgba(7,11,20,0.92);z-index:999;align-items:center;justify-content:center;padding:2rem;">
+    <div style="background:var(--bg-secondary);border:1px solid var(--border);max-width:760px;width:100%;max-height:90vh;overflow:auto;padding:2rem;position:relative;">
+      <button onclick="document.getElementById('arch-modal').style.display='none'" style="position:absolute;top:1rem;right:1rem;background:transparent;border:none;color:var(--text-muted);font-size:18px;cursor:pointer;">&times;</button>
+      <div style="font-size:11px;color:var(--cyan);letter-spacing:2px;text-transform:uppercase;margin-bottom:1rem;">Zero Trust Network Access Lab &mdash; Architecture</div>
+      <!-- ARCH_DIAGRAM_PLACEHOLDER: replace this comment with inline SVG -->
+      <div style="color:var(--text-faint);font-size:12px;padding:4rem;text-align:center;border:1px dashed var(--border);">Architecture diagram coming soon &mdash; inline SVG will be placed here</div>
+    </div>
   </div>
 
   <!-- ============================================================
@@ -474,7 +455,6 @@
           <div class="card-title">No login required</div>
           <div class="card-desc">Provision a temporary Okta account instantly. Pure JIT lifecycle — provisioned in real time, auto-revoked when timer expires.</div>
 
-          <div class="hint-txt" id="a-hint" style="display:none;margin-bottom:0.5rem;">Use these credentials on the next screen &mdash; open in incognito for a fresh session</div>
           <div class="cred-box" id="a-cred">
             <div class="cred-grid">
               <div>
@@ -505,6 +485,7 @@
 
           <div class="btn-stack">
             <button id="a-main-btn" class="btn-primary" onclick="anonGo()">Get anonymous access</button>
+            <div class="hint-txt" id="a-hint">Use these credentials on the next screen &mdash; open in incognito for a fresh session</div>
             <div>
               <span id="a-access-btn" class="btn-access-off">
                 Access protected page <span>→</span>
@@ -524,7 +505,6 @@
             <span>Authenticated as &nbsp;<strong id="c-cognito-email">—</strong>&nbsp; via Cognito</span>
           </div>
 
-          <div class="hint-txt" id="c-hint" style="display:none;margin-bottom:0.5rem;">Use these credentials on the next screen &mdash; open in incognito for a fresh session</div>
           <div class="cred-box" id="c-cred">
             <div class="cred-grid">
               <div>
@@ -556,6 +536,7 @@
           <div class="btn-stack">
             <button id="c-login-btn" class="btn-primary" onclick="cognitoLogin()">Login with Cognito</button>
             <button id="c-access-btn" class="btn-primary" onclick="cognitoGetAccess()" style="display:none">Get access</button>
+            <div class="hint-txt" id="c-hint">Use these credentials on the next screen &mdash; open in incognito for a fresh session</div>
             <div>
               <span id="c-page-btn" class="btn-access-off">
                 Access protected page <span>→</span>
@@ -623,7 +604,7 @@
          ============================================================ -->
     <div class="divider"></div>
     <div class="section">
-      <div class="sec-tag" style="margin-left:0;padding-left:0;"><div class="sec-line"></div><span class="sec-label">Architecture</span></div>
+      <div class="sec-tag"><div class="sec-line"></div><span class="sec-label">Architecture</span></div>
       <div class="sec-title">NIST SP 800-207 coverage</div>
       <p class="sec-sub">Every pillar has a concrete, demoable control.</p>
       <div class="pillars-grid">
@@ -678,6 +659,7 @@
       <a href="https://amitwebsite.online">Home</a>
       <a href="https://amitwebsite.online/lab.html">AI Lab</a>
       <a href="https://amitwebsite.online/contact.html">Contact</a>
+      <a href="https://github.com/amitmaurya001/zerotrust-aws-lab" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:5px;"><i class="fab fa-github"></i> Repo</a>
     </div>
     <div class="footer-built">
       <span class="f-orange">© 2026 Amit Maurya · Built with Claude Code · Agentic AI DevOps</span>
@@ -903,49 +885,23 @@
     /* ════════════════════════════════════════════════
        PATH 2 — COGNITO
        ════════════════════════════════════════════════ */
-    /* ── PKCE helpers ── */
-    function generateCodeVerifier() {
-      var array = new Uint8Array(64);
-      window.crypto.getRandomValues(array);
-      return btoa(String.fromCharCode.apply(null, array))
-        .replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
-    }
-
-    function generateCodeChallenge(verifier) {
-      var data = new TextEncoder().encode(verifier);
-      return window.crypto.subtle.digest('SHA-256', data).then(function(hash) {
-        return btoa(String.fromCharCode.apply(null, new Uint8Array(hash)))
-          .replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
-      });
-    }
-
     function cognitoLogin() {
       gaEvent('cognito_login_started');
-      var verifier = generateCodeVerifier();
-      sessionStorage.setItem('pkce_verifier', verifier);
-      generateCodeChallenge(verifier).then(function(challenge) {
-        var url = COGNITO_DOMAIN + '/login' +
-          '?client_id=' + encodeURIComponent(COGNITO_CLIENT_ID) +
-          '&response_type=code' +
-          '&scope=openid+email+profile' +
-          '&redirect_uri=' + encodeURIComponent(REDIRECT_URI) +
-          '&code_challenge=' + encodeURIComponent(challenge) +
-          '&code_challenge_method=S256';
-        window.location.href = url;
-      });
+      var url = COGNITO_DOMAIN + '/login' +
+        '?client_id=' + encodeURIComponent(COGNITO_CLIENT_ID) +
+        '&response_type=code' +
+        '&scope=openid+email+profile' +
+        '&redirect_uri=' + encodeURIComponent(REDIRECT_URI);
+      window.location.href = url;
     }
 
     function exchangeCognitoCode(code) {
       setMainBtn('c-login-btn', 'Authenticating...', true);
 
-      var verifier = sessionStorage.getItem('pkce_verifier') || '';
-      sessionStorage.removeItem('pkce_verifier');
-
       var body = 'grant_type=authorization_code' +
         '&client_id=' + encodeURIComponent(COGNITO_CLIENT_ID) +
         '&code=' + encodeURIComponent(code) +
-        '&redirect_uri=' + encodeURIComponent(REDIRECT_URI) +
-        (verifier ? '&code_verifier=' + encodeURIComponent(verifier) : '');
+        '&redirect_uri=' + encodeURIComponent(REDIRECT_URI);
 
       fetch(COGNITO_DOMAIN + '/oauth2/token', {
         method: 'POST',
@@ -972,25 +928,16 @@
       try {
         var payload = idToken.split('.')[1];
         var decoded = JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/')));
-        /* Detect Google federation */
-        var identities = decoded['identities'];
-        window._cognitoIdP = (identities && identities.length > 0)
-          ? identities[0].providerName
-          : 'Cognito';
         return decoded.email || decoded['cognito:username'] || 'unknown';
       } catch (e) { return 'unknown'; }
     }
 
     function showCognitoAuthenticated(email) {
-      var idpLabel = (window._cognitoIdP === 'Google') ? 'Google via Cognito' : 'Cognito';
       document.getElementById('c-cognito-email').textContent = email;
-      document.getElementById('c-strip').innerHTML =
-        '<div class="cog-dot"></div><span>Authenticated as &nbsp;<strong>' +
-        email + '</strong>&nbsp; via ' + idpLabel + '</span>';
       document.getElementById('c-strip').style.display       = 'flex';
       document.getElementById('c-login-btn').style.display   = 'none';
       document.getElementById('c-access-btn').style.display  = 'block';
-      gaEvent('cognito_authenticated', { email: email, idp: idpLabel });
+      gaEvent('cognito_authenticated', { email: email });
     }
 
     function cognitoGetAccess() {
