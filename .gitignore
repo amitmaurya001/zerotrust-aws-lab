@@ -13,3 +13,6 @@ lambda/__pycache__/
 # OS
 .DS_Store
 lambda/package/
+
+#miscellaneous
+*.bak

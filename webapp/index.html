@@ -236,14 +236,15 @@
     }
     .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 4px 18px rgba(0, 212, 255, 0.3); }
 
-    /* Provisioned state — muted green, non-clickable */
+    /* Provisioned state — visible green, non-clickable */
     .btn-provisioned {
       display: block; width: 100%;
-      background: var(--bg-surface); color: #4a8a6a;
+      background: #0a2a1a; color: #22c55e;
       padding: 12px 20px; font-size: 10px; font-weight: 700;
       letter-spacing: 2px; text-transform: uppercase;
-      border: 2px solid #1a3a2a; cursor: default;
+      border: 2px solid #22c55e; cursor: default;
       font-family: var(--font-mono);
+      box-shadow: 0 0 12px rgba(34, 197, 94, 0.2);
     }
 
     /* Access page — inline text link style matching portfolio work-cta */
@@ -308,6 +309,23 @@
     .f-orange { color: var(--orange); }
     .f-cyan   { color: var(--cyan); }
 
+
+    /* ── Copy button ── */
+    .copy-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-faint);
+      cursor: pointer;
+      font-size: 11px;
+      padding: 2px 6px;
+      margin-left: 6px;
+      font-family: var(--font-mono);
+      transition: color 0.2s;
+      vertical-align: middle;
+    }
+    .copy-btn:hover { color: var(--cyan); }
+    .copy-btn.copied { color: var(--green); }
+
     /* ── Responsive ── */
     @media (max-width: 700px) {
       .nav-links { display: none; }
@@ -335,6 +353,7 @@
       <a href="https://amitwebsite.online">Home</a>
       <a href="https://amitwebsite.online/lab.html" class="active">AI Lab</a>
       <a href="https://amitwebsite.online/contact.html">Contact</a>
+      <a href="https://github.com/amitmaurya001/zerotrust-aws-lab" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:5px;"><i class="fab fa-github"></i> Repo</a>
     </div>
     <button class="hamburger" id="hamburger" aria-label="Toggle menu">
       <span></span><span></span><span></span>
@@ -344,6 +363,7 @@
     <a href="https://amitwebsite.online">Home</a>
     <a href="https://amitwebsite.online/lab.html">AI Lab</a>
     <a href="https://amitwebsite.online/contact.html">Contact</a>
+    <a href="https://github.com/amitmaurya001/zerotrust-aws-lab" target="_blank" rel="noopener">GitHub Repo</a>
   </div>
 
   <!-- ============================================================
@@ -373,6 +393,27 @@
         <span class="cert-pill">Terraform</span>
         <span class="cert-pill">GitHub Actions OIDC</span>
       </div>
+    </div>
+  </div>
+
+
+  <!-- ============================================================
+       Architecture diagram placeholder
+       Replace the SVG comment below with the full inline SVG
+       when ready — or load from /assets/arch-diagram.svg
+       ============================================================ -->
+  <div style="background:var(--bg-secondary);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:0.75rem 2rem;display:flex;align-items:center;justify-content:center;gap:1rem;">
+    <span style="font-size:11px;color:var(--text-faint);letter-spacing:1px;text-transform:uppercase;">Architecture</span>
+    <button onclick="document.getElementById('arch-modal').style.display='flex'" style="font-size:11px;color:var(--cyan);background:transparent;border:none;border-bottom:1px solid var(--border);padding:0 0 2px;cursor:pointer;font-family:var(--font-mono);letter-spacing:1px;text-transform:uppercase;">View diagram &rarr;</button>
+  </div>
+
+  <!-- Architecture modal -->
+  <div id="arch-modal" onclick="if(event.target===this)this.style.display='none'" style="display:none;position:fixed;inset:0;background:rgba(7,11,20,0.92);z-index:999;align-items:center;justify-content:center;padding:2rem;">
+    <div style="background:var(--bg-secondary);border:1px solid var(--border);max-width:760px;width:100%;max-height:90vh;overflow:auto;padding:2rem;position:relative;">
+      <button onclick="document.getElementById('arch-modal').style.display='none'" style="position:absolute;top:1rem;right:1rem;background:transparent;border:none;color:var(--text-muted);font-size:18px;cursor:pointer;">&times;</button>
+      <div style="font-size:11px;color:var(--cyan);letter-spacing:2px;text-transform:uppercase;margin-bottom:1rem;">Zero Trust Network Access Lab &mdash; Architecture</div>
+      <!-- ARCH_DIAGRAM_PLACEHOLDER: replace this comment with inline SVG -->
+      <div style="color:var(--text-faint);font-size:12px;padding:4rem;text-align:center;border:1px dashed var(--border);">Architecture diagram coming soon &mdash; inline SVG will be placed here</div>
     </div>
   </div>
 
@@ -419,10 +460,12 @@
               <div>
                 <div class="cred-lbl">Okta account</div>
                 <div class="cred-val" id="a-email">—</div>
+                <button class="copy-btn" id="a-copy-email" onclick="copyVal('a-email','a-copy-email')" title="Copy"><i class="fas fa-copy"></i></button>
               </div>
               <div>
                 <div class="cred-lbl">Password</div>
                 <div class="cred-val" id="a-password">—</div>
+                <button class="copy-btn" id="a-copy-pwd" onclick="copyVal('a-password','a-copy-pwd')" title="Copy"><i class="fas fa-copy"></i></button>
               </div>
             </div>
             <div>
@@ -442,7 +485,7 @@
 
           <div class="btn-stack">
             <button id="a-main-btn" class="btn-primary" onclick="anonGo()">Get anonymous access</button>
-            <div class="hint-txt" id="a-hint">Use these credentials on the next screen</div>
+            <div class="hint-txt" id="a-hint">Use these credentials on the next screen &mdash; open in incognito for a fresh session</div>
             <div>
               <span id="a-access-btn" class="btn-access-off">
                 Access protected page <span>→</span>
@@ -467,10 +510,12 @@
               <div>
                 <div class="cred-lbl">Okta account</div>
                 <div class="cred-val" id="c-email">—</div>
+                <button class="copy-btn" id="c-copy-email" onclick="copyVal('c-email','c-copy-email')" title="Copy"><i class="fas fa-copy"></i></button>
               </div>
               <div>
                 <div class="cred-lbl">Password</div>
                 <div class="cred-val" id="c-password">—</div>
+                <button class="copy-btn" id="c-copy-pwd" onclick="copyVal('c-password','c-copy-pwd')" title="Copy"><i class="fas fa-copy"></i></button>
               </div>
             </div>
             <div>
@@ -491,7 +536,7 @@
           <div class="btn-stack">
             <button id="c-login-btn" class="btn-primary" onclick="cognitoLogin()">Login with Cognito</button>
             <button id="c-access-btn" class="btn-primary" onclick="cognitoGetAccess()" style="display:none">Get access</button>
-            <div class="hint-txt" id="c-hint">Use these credentials on the next screen</div>
+            <div class="hint-txt" id="c-hint">Use these credentials on the next screen &mdash; open in incognito for a fresh session</div>
             <div>
               <span id="c-page-btn" class="btn-access-off">
                 Access protected page <span>→</span>
@@ -503,9 +548,7 @@
       </div>
     </div>
 
-    <!-- ============================================================
-         Server status section
-         ============================================================ -->
+    <!-- SERVER STATUS SECTION — Phase 3 not yet deployed — uncomment when EC2/RDS ready
     <div class="divider"></div>
     <div class="section">
       <div class="sec-tag"><div class="sec-line"></div><span class="sec-label">Server-Based Demos</span></div>
@@ -554,6 +597,7 @@
         </div>
       </div>
     </div>
+    END SERVER STATUS SECTION -->
 
     <!-- ============================================================
          NIST pillars
@@ -615,6 +659,7 @@
       <a href="https://amitwebsite.online">Home</a>
       <a href="https://amitwebsite.online/lab.html">AI Lab</a>
       <a href="https://amitwebsite.online/contact.html">Contact</a>
+      <a href="https://github.com/amitmaurya001/zerotrust-aws-lab" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:5px;"><i class="fab fa-github"></i> Repo</a>
     </div>
     <div class="footer-built">
       <span class="f-orange">© 2026 Amit Maurya · Built with Claude Code · Agentic AI DevOps</span>
@@ -826,6 +871,7 @@
       document.getElementById('a-cred').style.display  = 'none';
       document.getElementById('a-log').style.display   = 'none';
       document.getElementById('a-hint').style.display  = 'none';
+      document.getElementById('a-hint').textContent    = 'Use these credentials on the next screen — open in incognito for a fresh session';
       document.getElementById('a-timer').textContent   = '—';
       document.getElementById('a-timer').classList.remove('expired');
       document.getElementById('a-log-lines').innerHTML = '';
@@ -969,6 +1015,7 @@
       document.getElementById('c-cred').style.display  = 'none';
       document.getElementById('c-log').style.display   = 'none';
       document.getElementById('c-hint').style.display  = 'none';
+      document.getElementById('c-hint').textContent    = 'Use these credentials on the next screen — open in incognito for a fresh session';
       document.getElementById('c-timer').textContent   = '—';
       document.getElementById('c-timer').classList.remove('expired');
       document.getElementById('c-log-lines').innerHTML = '';
@@ -1086,6 +1133,22 @@
       el.onmouseout       = null;
       el.style.letterSpacing = '2px';
       el.style.borderBottomColor = 'var(--border)';
+    }
+
+
+    /* ── Copy to clipboard ── */
+    function copyVal(valId, btnId) {
+      var text = document.getElementById(valId).textContent;
+      if (!text || text === '—') return;
+      navigator.clipboard.writeText(text).then(function () {
+        var btn = document.getElementById(btnId);
+        btn.classList.add('copied');
+        btn.innerHTML = '<i class="fas fa-check"></i>';
+        setTimeout(function () {
+          btn.classList.remove('copied');
+          btn.innerHTML = '<i class="fas fa-copy"></i>';
+        }, 1500);
+      }).catch(function () {});
     }
 
     /* ── Hamburger menu ── */
