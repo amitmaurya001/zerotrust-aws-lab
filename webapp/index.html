@@ -984,6 +984,7 @@
     function showCognitoAuthenticated(email) {
       var idpLabel = (window._cognitoIdP === 'Google') ? 'Google via Cognito' : 'Cognito';
       document.getElementById('c-cognito-email').textContent = email;
+      window._cognitoEmail = email;
       document.getElementById('c-strip').innerHTML =
         '<div class="cog-dot"></div><span>Authenticated as &nbsp;<strong>' +
         email + '</strong>&nbsp; via ' + idpLabel + '</span>';
@@ -1036,7 +1037,8 @@
       setAccessBtn('c-access-btn', 'Provisioned ✓', 'locked');
 
       /* Pass Cognito email to private page via signed URL param */
-      var privateUrl = PRIVATE_PAGE_URL + '?cid=' + encodeURIComponent(btoa(document.getElementById('c-cognito-email').textContent + '|' + Date.now()));
+      var privateUrl = PRIVATE_PAGE_URL + '?cid=' + encodeURIComponent(btoa((window._cognitoEmail || '') + '|' + Date.now()));
+      //var privateUrl = PRIVATE_PAGE_URL + '?cid=' + encodeURIComponent(btoa(document.getElementById('c-cognito-email').textContent + '|' + Date.now()));
       enableAccessBtn('c-page-btn', privateUrl);
 
       gaEvent('jit_credentials_shown', { path: 'cognito' });
