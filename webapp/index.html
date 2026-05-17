@@ -401,7 +401,7 @@
        Architecture diagram — PNG with lightbox zoom
        ============================================================ -->
   <div style="background:var(--bg-secondary);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:1.5rem 2rem;">
-    <div style="display:flex;align-items:center;justify-content:center;gap:2rem;margin-bottom:1rem;flex-wrap:wrap;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;max-width:900px;margin-left:auto;margin-right:auto;">
       <div style="font-size:13px;color:var(--cyan);letter-spacing:3px;text-transform:uppercase;font-weight:700;">Architecture</div>
       <a href="https://github.com/amitmaurya001/zerotrust-aws-lab" target="_blank" rel="noopener"
         style="font-size:11px;color:var(--cyan);text-decoration:none;letter-spacing:1px;text-transform:uppercase;display:inline-flex;align-items:center;gap:6px;border-bottom:1px solid transparent;transition:border-color 0.2s;"
@@ -1041,9 +1041,14 @@
       document.getElementById('c-hint').style.display = 'block';
 
       //  setAccessBtn('c-access-btn', 'Provisioned ✓', 'locked');
-      document.getElementById('c-access-btn').className = 'btn-provisioned';
-      document.getElementById('c-access-btn').textContent = 'Provisioned \u2713';
-      document.getElementById('c-access-btn').onclick = null;
+     // document.getElementById('c-access-btn').className = 'btn-provisioned';
+     // document.getElementById('c-access-btn').textContent = 'Provisioned \u2713';
+     // document.getElementById('c-access-btn').onclick = null;
+     // var cb = document.getElementById('c-access-btn');
+           cb.className = 'btn-provisioned';
+           cb.textContent = 'Provisioned \u2713';
+           cb.onclick = null;
+           cb.removeAttribute('style');
 
       /* Pass Cognito email to private page via signed URL param */
       var privateUrl = PRIVATE_PAGE_URL + '?cid=' + encodeURIComponent(btoa((window._cognitoEmail || '') + '|' + Date.now()));
