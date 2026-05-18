@@ -309,9 +309,9 @@
 
         <!-- Cognito section — rendered only when ?cid= param present -->
         <div class="cog-section" id="cog-section" style="display:none">
-          <div class="cog-lbl">External identity — Cognito verified</div>
+          <div class="cog-lbl" id="cog-lbl">External identity — Cognito verified</div>
           <div class="id-row"><span class="id-key">verified as</span><span class="id-val id-green" id="cog-email">—</span></div>
-          <div class="id-row"><span class="id-key">auth provider</span><span class="id-val">AWS Cognito</span></div>
+          <div class="id-row"><span class="id-key">auth provider</span><span class="id-val" id="auth-provider">AWS Cognito</span></div>
           <div class="id-row"><span class="id-key">audit trail</span><span class="id-val id-green">Real identity logged in CloudWatch</span></div>
         </div>
 
@@ -485,7 +485,7 @@
 	var iat      = claims.iat || now;
 	sessionSeconds   = SESSION_DURATION; /* Always 3 min — EventBridge revokes at this time */
 	sessionStartTime = new Date(iat * 1000);
-	      
+
 
       /* Step 5 — populate page */
       renderPage(claims);
@@ -533,6 +533,10 @@
         var providerLabel = (cognitoIdP === 'Google') ? 'Google via AWS Cognito' : 'AWS Cognito';
         var provEl = document.getElementById('auth-provider');
         if (provEl) provEl.textContent = providerLabel;
+        var lblEl = document.getElementById('cog-lbl');
+        if (lblEl) lblEl.textContent = (cognitoIdP === 'Google')
+          ? 'External identity — Google via Cognito'
+          : 'External identity — Cognito verified';
       }
 
       /* Show Cognito or anonymous section */
