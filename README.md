@@ -87,6 +87,7 @@ Visit [webapp.amitwebsite.online](https://webapp.amitwebsite.online) to try both
 | Secrets | AWS SSM Parameter Store (SecureString) |
 | Observability | CloudWatch Logs, CloudWatch Metrics, CloudWatch Alarms, SNS alerts |
 | Compliance | AWS Config (3 rules: S3 SSL, Lambda no public access, CloudTrail enabled) |
+| Audit | AWS CloudTrail (API activity logging, management events) |
 | AI (planned) | Amazon Bedrock — Claude Haiku 4.5 (daily security log analysis) |
 | IaC | Terraform (AWS + Cloudflare providers) |
 | CI/CD | GitHub Actions + OIDC trust (zero long-lived credentials) |
@@ -273,11 +274,20 @@ Okta, Cloudflare, and GitHub configuration are unchanged. No file edits required
 
 ## Known Limitations and Design Decisions
 
-**Cloudflare Free Plan — 15-minute minimum session:**
-Cloudflare Access free plan has a minimum session duration of 15 minutes. Actual JIT revocation happens at 3 minutes via Okta user deletion (Lambda/EventBridge). This is set to "No duration, expires immediately" (`0s`) so each new browser session requires fresh authentication.
+**Cloudflare Access — session expires immediately:**
+Session duration is set to "No duration, expires immediately" — each new browser visit
+to the private page requires fresh Cloudflare Access authentication. Combined with
+3-minute Okta user deletion via EventBridge/Lambda, access is fully revoked at both
+the identity layer (Okta) and the session layer (Cloudflare).
 
-**S3 SSL enforcement — intentional non-compliance:**
-AWS Config flags `webapp` and `private` S3 buckets as non-compliant for SSL enforcement. This is intentional — Cloudflare Flexible SSL mode means the Cloudflare-to-S3 leg is HTTP (S3 website endpoints do not support HTTPS). The public-facing connection (user to Cloudflare) is always HTTPS. The IP allowlist (Cloudflare egress IPs only) prevents any direct S3 access.
+**End-to-end encryption:**
+All traffic is TLS-encrypted at every layer:
+- User to Cloudflare edge: HTTPS enforced via "Always Use HTTPS" (Cloudflare Edge Certificate)
+- Cloudflare to S3: HTTP on the internal leg (S3 website endpoints do not support HTTPS) — mitigated by Cloudflare IP allowlist blocking all non-Cloudflare access to S3 directly
+- API Gateway: HTTPS only (AWS managed TLS)
+- Lambda to Okta API: HTTPS (requests library, TLS verified)
+- Lambda to SSM: AWS internal encrypted channel
+- S3 buckets: AES-256 server-side encryption at rest
 
 **Cloudflare Access seats:**
 Each unique user who authenticates consumes a seat (50 seats on free plan). JIT users persist in Cloudflare's user registry even after Okta deletion. Manually revoke via Zero Trust dashboard periodically to free seats.
@@ -306,6 +316,22 @@ Two workflows:
 **GitHub OIDC trust** locked to `repo:amitmaurya001/zerotrust-aws-lab:environment:production` — no other repositories or branches can assume the deploy role.
 
 **S3 bucket protection:** Both ZTNA buckets have `prevent_destroy = true` in Terraform. Access restricted to Cloudflare egress IP ranges only.
+
+---
+
+## Compliance
+
+AWS Config runs continuously with three managed rules:
+
+| Rule | What it monitors |
+|---|---|
+| `cloudtrail-enabled` | CloudTrail must be active in the account |
+| `lambda-function-public-access-prohibited` | Lambda functions must not have public resource policies |
+| `s3-bucket-ssl-requests-only` | S3 buckets must enforce SSL-only requests |
+
+The `s3-bucket-ssl-requests-only` rule intentionally shows non-compliant for `webapp` and `private` buckets. These buckets use Cloudflare Flexible SSL — the Cloudflare-to-S3 leg is HTTP (S3 website endpoints do not support HTTPS), while the public-facing connection is always HTTPS enforced at the Cloudflare edge via "Always Use HTTPS". The Cloudflare IP allowlist on both buckets prevents any direct non-Cloudflare access entirely. This is a documented, intentional design decision, not a gap.
+
+Config snapshots and compliance history are delivered to `aws-config-zerotrust-[account-id]` S3 bucket with 90-day lifecycle.
 
 ---
 
