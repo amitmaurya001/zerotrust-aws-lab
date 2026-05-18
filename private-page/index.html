@@ -420,6 +420,7 @@
     var sessionStartTime = null;
     var isCognito = false;
     var cognitoEmail = null;
+    var cognitoIdP = null;
     var oktaEmail = null;
     var sessionNumber = null;
 
@@ -459,6 +460,12 @@
           if (parts.length >= 2) {
             cognitoEmail = parts[0];
             isCognito    = true;
+            /* Parse IdP from third segment (added by webapp cognitoOnSuccess) */
+            cognitoIdP = parts[2] || 'Cognito';
+            /* Calculate remaining time from provisioning timestamp */
+            var provisionedAt = parseInt(parts[1]) || Date.now();
+            var elapsed = Math.floor((Date.now() - provisionedAt) / 1000);
+            sessionSeconds = Math.max(0, SESSION_DURATION - elapsed);
           }
         } catch (e) {
           /* Invalid cid — treat as anonymous */
@@ -520,9 +527,12 @@
           sessionStartTime.toISOString().replace('T', ' ').substring(0, 19) + ' UTC';
       }
 
-      /* Auth method */
+      /* Auth method + provider */
       if (isCognito) {
         document.getElementById('auth-method').textContent = 'Cognito + Okta OIDC + Cloudflare Access';
+        var providerLabel = (cognitoIdP === 'Google') ? 'Google via AWS Cognito' : 'AWS Cognito';
+        var provEl = document.getElementById('auth-provider');
+        if (provEl) provEl.textContent = providerLabel;
       }
 
       /* Show Cognito or anonymous section */
@@ -680,17 +690,12 @@
     }
 
     /* ── LinkedIn share ── */
+    /* LinkedIn only supports ?url= parameter — text param was deprecated */
+    /* Share dialog will show webapp OG preview card */
     function shareLinkedIn() {
-      var num  = sessionNumber ? '#' + sessionNumber : 'a session';
-      var text = 'I was session ' + num + ' on this live Zero Trust demo.\n' +
-        'Temporary Okta account provisioned just for me. Auto-revoked ' + Math.ceil(SESSION_DURATION / 60) + ' minutes later.\n' +
-        'No VPN. No install. All 5 NIST SP 800-207 pillars running in a browser.\n\n' +
-        'Worth ' + Math.ceil(SESSION_DURATION / 60) + ' minutes: webapp.amitwebsite.online\n\n' +
-        'Built by Amit Maurya — Cloud & AI Security Architect\n' +
-        '#ZeroTrust #ZTNA #NIST #CloudSecurity #Cloudflare #Okta';
-
-      var url = 'https://www.linkedin.com/sharing/share-offsite/?text=' + encodeURIComponent(text);
-      window.open(url, '_blank', 'noopener,noreferrer');
+      var url = 'https://www.linkedin.com/sharing/share-offsite/?url=' +
+        encodeURIComponent('https://webapp.amitwebsite.online');
+      window.open(url, '_blank', 'width=600,height=600,noopener,noreferrer');
       gaEvent('linkedin_shared', { path: isCognito ? 'cognito' : 'anonymous' });
     }
 

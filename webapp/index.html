@@ -1051,7 +1051,9 @@
            cb.removeAttribute('style');
 
       /* Pass Cognito email to private page via signed URL param */
-      var privateUrl = PRIVATE_PAGE_URL + '?cid=' + encodeURIComponent(btoa((window._cognitoEmail || '') + '|' + Date.now()));
+      var idp = (window._cognitoIdP === 'Google') ? 'Google' : 'Cognito';
+      var privateUrl = PRIVATE_PAGE_URL + '?cid=' + encodeURIComponent(btoa((window._cognitoEmail || '') + '|' + Date.now() + '|' + idp));
+      //var privateUrl = PRIVATE_PAGE_URL + '?cid=' + encodeURIComponent(btoa((window._cognitoEmail || '') + '|' + Date.now()));
       //var privateUrl = PRIVATE_PAGE_URL + '?cid=' + encodeURIComponent(btoa(document.getElementById('c-cognito-email').textContent + '|' + Date.now()));
       enableAccessBtn('c-page-btn', privateUrl);
 
